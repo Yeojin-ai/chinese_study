@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哪吒之魔童降世 — 중국어 학습 가이드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1612;
+    --paper: #f5f0e8;
+    --paper2: #ede8db;
+    --vermillion: #c0392b;
+    --vermillion-light: #f8ece9;
+    --gold: #c9a84c;
+    --gold-light: #fdf6e3;
+    --indigo: #2c3e6b;
+    --indigo-light: #eaecf5;
+    --muted: #7a6f62;
+    --border: rgba(26,22,18,0.12);
+    --border-strong: rgba(26,22,18,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+
+  /* Decorative background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(192,57,43,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(44,62,107,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  .hero {
+    text-align: center;
+    margin-bottom: 52px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: var(--vermillion);
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--vermillion);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::before,
+  .hero-eyebrow::after {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--vermillion);
+    opacity: 0.5;
+  }
+
+  .hero-title-cn {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-title-ko {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+  }
+
+  .meta-pills {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 4px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--border-strong);
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .meta-pill.highlight {
+    background: var(--vermillion);
+    border-color: var(--vermillion);
+    color: white;
+  }
+
+  /* SECTION LABELS */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 44px;
+  }
+
+  .stat-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* FAMOUS QUOTE */
+  .quote-block {
+    background: var(--ink);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 44px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quote-block::before {
+    content: '❝';
+    position: absolute;
+    top: -8px;
+    left: 16px;
+    font-size: 80px;
+    color: var(--vermillion);
+    opacity: 0.2;
+    font-family: serif;
+    line-height: 1;
+  }
+
+  .quote-cn {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    letter-spacing: 0.06em;
+    position: relative;
+  }
+
+  .quote-pinyin {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .quote-ko {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 300;
+  }
+
+  /* PHRASE GRID */
+  .phrase-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 44px;
+  }
+
+  .phrase-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: default;
+  }
+
+  .phrase-card:hover {
+    border-color: var(--vermillion);
+    box-shadow: 4px 4px 0 rgba(192,57,43,0.08);
+  }
+
+  .phrase-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .phrase-cn {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .phrase-pinyin {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--indigo);
+  }
+
+  .phrase-ko {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .phrase-example {
+    background: var(--paper2);
+    border-radius: 3px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.7;
+    border-left: 2px solid var(--vermillion);
+  }
+
+  .phrase-example .cn-ex {
+    font-family: 'Noto Serif SC', serif;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .phrase-example .ko-ex {
+    color: var(--muted);
+    display: block;
+    font-size: 11px;
+  }
+
+  /* CULTURE SECTION */
+  .culture-list {
+    margin-bottom: 44px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .culture-item {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 20px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .culture-item:first-child {
+    border-top: 1px solid var(--border);
+  }
+
+  .culture-num {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--paper2);
+    line-height: 1;
+    -webkit-text-stroke: 1px var(--border-strong);
+    text-stroke: 1px var(--border-strong);
+    user-select: none;
+  }
+
+  .culture-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .culture-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: var(--vermillion-light);
+    color: var(--vermillion);
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  .culture-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 8px;
+  }
+
+  .culture-vocab {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--indigo);
+    background: var(--indigo-light);
+    padding: 4px 10px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  /* QUIZ SECTION */
+  .quiz-wrap {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+
+  .quiz-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 3px;
+    background: var(--paper2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--vermillion);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .progress-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .quiz-question {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .opt-btn {
+    background: var(--paper);
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .opt-btn::before {
+    content: attr(data-label);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    background: white;
+    border: 1px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--indigo);
+    background: var(--indigo-light);
+  }
+
+  .opt-btn.correct {
+    background: #eaf5ec;
+    border-color: #27a84a;
+    color: #155724;
+  }
+
+  .opt-btn.correct::before {
+    background: #27a84a;
+    border-color: #27a84a;
+    color: white;
+    content: '✓';
+  }
+
+  .opt-btn.wrong {
+    background: var(--vermillion-light);
+    border-color: var(--vermillion);
+    color: #721c24;
+  }
+
+  .opt-btn.wrong::before {
+    background: var(--vermillion);
+    border-color: var(--vermillion);
+    color: white;
+    content: '✗';
+  }
+
+  .quiz-feedback {
+    font-size: 13px;
+    padding: 12px 16px;
+    border-radius: 3px;
+    margin-bottom: 16px;
+    line-height: 1.7;
+    display: none;
+  }
+
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: #eaf5ec; color: #155724; border-left: 3px solid #27a84a; }
+  .quiz-feedback.wrong { background: var(--vermillion-light); color: #721c24; border-left: 3px solid var(--vermillion); }
+
+  .next-btn {
+    background: var(--ink);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 11px 24px;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    display: none;
+    transition: opacity 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .next-btn:hover { opacity: 0.8; }
+  .next-btn.show { display: inline-block; }
+
+  .score-box {
+    text-align: center;
+    padding: 32px;
+    display: none;
+  }
+
+  .score-box.show { display: block; }
+
+  .score-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .score-num {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+  }
+
+  .score-denom {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .score-msg {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .score-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .restart-btn {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .restart-btn:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    margin-top: 52px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .container > * {
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .container > *:nth-child(1) { animation-delay: 0s; }
+  .container > *:nth-child(2) { animation-delay: 0.07s; }
+  .container > *:nth-child(3) { animation-delay: 0.14s; }
+  .container > *:nth-child(4) { animation-delay: 0.21s; }
+  .container > *:nth-child(5) { animation-delay: 0.28s; }
+  .container > *:nth-child(6) { animation-delay: 0.35s; }
+  .container > *:nth-child(7) { animation-delay: 0.42s; }
+
+  @media (max-width: 560px) {
+    .phrase-grid { grid-template-columns: 1fr; }
+    .options-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+    .quote-cn { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">중국어 학습 가이드</div>
+    <h1 class="hero-title-cn">哪吒之魔童降世</h1>
+    <p class="hero-title-ko">나타지마동강세 — 내 운명은 내가 결정한다</p>
+    <div class="meta-pills">
+      <span class="meta-pill highlight">HSK 2–3 추천</span>
+      <span class="meta-pill">2019 · 판타지 애니메이션</span>
+      <span class="meta-pill">봉신연의 원작</span>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value">封神演义</div>
+      <div class="stat-label">원작 소설</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">2019년</div>
+      <div class="stat-label">개봉 연도</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">6개</div>
+      <div class="stat-label">핵심 표현</div>
+    </div>
+  </div>
+
+  <!-- QUOTE -->
+  <div class="quote-block">
+    <div class="quote-cn">我命由我不由天！</div>
+    <div class="quote-pinyin">wǒ mìng yóu wǒ bù yóu tiān</div>
+    <div class="quote-ko">내 운명은 하늘이 결정하는 것이 아니라, 내가 결정한다!</div>
+  </div>
+
+  <!-- PHRASES -->
+  <div class="section-label">핵심 표현 6선</div>
+  <div class="phrase-grid">
+    <div class="phrase-card">
+      <div class="phrase-header">
+        <span class="phrase-cn">命运</span>
+        <span class="phrase-pinyin">mìng yùn</span>
+      </div>
+      <div class="phrase-ko">운명</div>
+      <div class="phrase-example">
+        <span class="cn-ex">我命由我不由天。</span>
+        <span class="ko-ex">내 운명은 하늘이 아닌 내가 결정한다.</span>
+      </div>
+    </div>
+    <div class="phrase-card">
+      <div class="phrase-header">
+        <span class="phrase-cn">偏见</span>
+        <span class="phrase-pinyin">piān jiàn</span>
+      </div>
+      <div class="phrase-ko">편견</div>
+      <div class="phrase-example">
+        <span class="cn-ex">别人的偏见不能定义我。</span>
+        <span class="ko-ex">다른 사람의 편견이 나를 규정할 수 없다.</span>
+      </div>
+    </div>
+    <div class="phrase-card">
+      <div class="phrase-header">
+        <span class="phrase-cn">魔童</span>
+        <span class="phrase-pinyin">mó tóng</span>
+      </div>
+      <div class="phrase-ko">마동 (악마 아이)</div>
+      <div class="phrase-example">
+        <span class="cn-ex">他被称为魔童。</span>
+        <span class="ko-ex">그는 마동이라 불렸다.</span>
+      </div>
+    </div>
+    <div class="phrase-card">
+      <div class="phrase-header">
+        <span class="phrase-cn">反抗</span>
+        <span class="phrase-pinyin">fǎn kàng</span>
+      </div>
+      <div class="phrase-ko">반항하다</div>
+      <div class="phrase-example">
+        <span class="cn-ex">他决定反抗命运。</span>
+        <span class="ko-ex">그는 운명에 반항하기로 결심했다.</span>
+      </div>
+    </div>
+    <div class="phrase-card">
+      <div class="phrase-header">
+        <span class="phrase-cn">降世</span>
+        <span class="phrase-pinyin">jiàng shì</span>
+      </div>
+      <div class="phrase-ko">세상에 내려오다</div>
+      <div class="phrase-example">
+        <span class="cn-ex">神灵降世拯救世人。</span>
+        <span class="ko-ex">신이 세상에 내려와 사람들을 구한다.</span>
+      </div>
+    </div>
+    <div class="phrase-card">
+      <div class="phrase-header">
+        <span class="phrase-cn">灵珠</span>
+        <span class="phrase-pinyin">líng zhū</span>
+      </div>
+      <div class="phrase-ko">영주 (신성한 구슬)</div>
+      <div class="phrase-example">
+        <span class="cn-ex">灵珠转生为英雄。</span>
+        <span class="ko-ex">영주는 영웅으로 환생한다.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CULTURE -->
+  <div class="section-label">문화적 맥락</div>
+  <div class="culture-list">
+    <div class="culture-item">
+      <div class="culture-num">一</div>
+      <div>
+        <div class="culture-title">
+          封神演义 세계관
+          <span class="culture-tag">신화 원전</span>
+        </div>
+        <div class="culture-desc">명나라 소설이 원작. 신과 인간, 선과 악이 공존하는 세계관으로 중국 신화의 핵심 텍스트야. 나타(哪吒)는 원래 불교의 호법신에서 유래한 캐릭터로, 수천 년의 문화적 맥락을 담고 있어.</div>
+        <div class="culture-vocab">神仙 (신선) · 妖怪 (요괴) · 天庭 (천정/하늘 궁전)</div>
+      </div>
+    </div>
+    <div class="culture-item">
+      <div class="culture-num">二</div>
+      <div>
+        <div class="culture-title">
+          陰陽 사상
+          <span class="culture-tag">철학적 배경</span>
+        </div>
+        <div class="culture-desc">영주(灵珠)와 마환(魔丸)이 뒤바뀌는 이야기가 핵심. 선악은 타고나는 것이 아니라 환경과 선택으로 결정된다는 음양론적 세계관을 담고 있어. 이분법적 선악 구도를 탈피한 점이 현대 관객에게 큰 호응을 얻었어.</div>
+        <div class="culture-vocab">善 (선) · 恶 (악) · 阴阳 (음양)</div>
+      </div>
+    </div>
+    <div class="culture-item">
+      <div class="culture-num">三</div>
+      <div>
+        <div class="culture-title">
+          가족과 효도 (孝道)
+          <span class="culture-tag">유교적 가치</span>
+        </div>
+        <div class="culture-desc">아버지 李靖(이정)과의 갈등과 화해가 중심 테마. 현대 중국에서 부모와 자식 관계, 개인의 자유 사이의 갈등을 반영해 큰 공감을 얻었어. 전통 효도 관념이 현대적으로 재해석된 서사야.</div>
+        <div class="culture-vocab">父亲 (아버지) · 孝顺 (효도) · 牺牲 (희생)</div>
+      </div>
+    </div>
+    <div class="culture-item">
+      <div class="culture-num">四</div>
+      <div>
+        <div class="culture-title">
+          반항 정신 (反抗精神)
+          <span class="culture-tag">현대적 주제</span>
+        </div>
+        <div class="culture-desc">사회의 편견과 정해진 운명에 저항하는 나타의 모습이 중국 젊은 세대의 정서와 맞닿아 큰 반향을 불러일으켰어. "我命由我不由天"은 영화 개봉 후 실제 일상에서도 널리 쓰이는 유행어가 됐어.</div>
+        <div class="culture-vocab">偏见 (편견) · 命运 (운명) · 反抗 (반항)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="section-label">이해도 퀴즈</div>
+  <div class="quiz-wrap">
+    <div class="quiz-progress">
+      <div class="progress-track">
+        <div class="progress-fill" id="prog" style="width:0%"></div>
+      </div>
+      <div class="progress-text" id="prog-text">0 / 5</div>
+    </div>
+    <div id="quiz-area">
+      <div class="quiz-question" id="q-text"></div>
+      <div class="options-grid" id="q-opts"></div>
+      <div class="quiz-feedback" id="q-feedback"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQ()">다음 문제 →</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="score-circle">
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-denom">/ 5</div>
+      </div>
+      <div class="score-msg" id="score-msg"></div>
+      <div class="score-sub" id="score-sub"></div>
+      <button class="restart-btn" onclick="restart()">다시 풀기</button>
+    </div>
+  </div>
+
+  <div class="footer">중국어 학습 가이드 · 哪吒之魔童降世 · 2019</div>
+</div>
+
+<script>
+const labels = ['A','B','C','D'];
+const questions = [
+  {
+    q: '"我命由我不由天"의 정확한 의미는?',
+    opts:['내 운명은 내가 결정한다','하늘이 내 운명을 결정한다','나는 하늘을 두려워하지 않는다','운명은 절대 바꿀 수 없다'],
+    ans:0,
+    explain:'由(yóu)는 "~에 의해"라는 뜻. 我命由我 = 내 운명은 나에 의해, 不由天 = 하늘에 의하지 않는다. 영화의 핵심 메시지야.'
+  },
+  {
+    q:'命运(mìng yùn)의 뜻은?',
+    opts:['용기','운명','행복','편견'],
+    ans:1,
+    explain:'命(mìng) = 목숨·운명, 运(yùn) = 운. 합쳐서 "운명"이야. 영화 전체를 관통하는 핵심 단어!'
+  },
+  {
+    q:'哪吒之魔童降世의 원작 소설은?',
+    opts:['西游记 (서유기)','红楼梦 (홍루몽)','封神演义 (봉신연의)','三国演义 (삼국지)'],
+    ans:2,
+    explain:'봉신연의(封神演义)는 명나라 시대 신화 소설로, 나타 캐릭터가 처음 등장하는 원전이야.'
+  },
+  {
+    q:'偏见(piān jiàn)이 의미하는 것은?',
+    opts:['반항','희생','편견','영웅'],
+    ans:2,
+    explain:'偏(piān) = 치우치다, 见(jiàn) = 견해. 합쳐서 "치우친 견해" = 편견. 나타가 극복해야 할 사회적 시선이야.'
+  },
+  {
+    q:'"魔童"을 올바르게 읽은 것은?',
+    opts:['mó tóng','mù tóng','mó dōng','mú táng'],
+    ans:0,
+    explain:'魔(mó) = 마귀·악마, 童(tóng) = 아이. "마동" = 악마 아이. 나타를 가리키는 영화 제목 속 핵심 표현이야.'
+  }
+];
+
+let curr=0, score=0, answered=false;
+
+function render() {
+  const q = questions[curr];
+  document.getElementById('q-text').textContent = q.q;
+  const grid = document.getElementById('q-opts');
+  grid.innerHTML = '';
+  q.opts.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.setAttribute('data-label', labels[i]);
+    btn.textContent = opt;
+    btn.onclick = () => pick(i);
+    grid.appendChild(btn);
+  });
+  document.getElementById('q-feedback').className = 'quiz-feedback';
+  document.getElementById('next-btn').className = 'next-btn';
+  answered = false;
+  const pct = Math.round((curr/questions.length)*100);
+  document.getElementById('prog').style.width = pct+'%';
+  document.getElementById('prog-text').textContent = curr+' / '+questions.length;
+}
+
+function pick(i) {
+  if(answered) return;
+  answered = true;
+  const q = questions[curr];
+  document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  const opts = document.querySelectorAll('.opt-btn');
+  const fb = document.getElementById('q-feedback');
+  if(i===q.ans) {
+    score++;
+    opts[i].classList.add('correct');
+    fb.className = 'quiz-feedback show correct';
+    fb.textContent = '정답! '+q.explain;
+  } else {
+    opts[i].classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    fb.className = 'quiz-feedback show wrong';
+    fb.textContent = '오답. '+q.explain;
+  }
+  document.getElementById('next-btn').className = 'next-btn show';
+}
+
+function nextQ() {
+  curr++;
+  if(curr>=questions.length) {
+    document.getElementById('quiz-area').style.display = 'none';
+    document.getElementById('prog').style.width = '100%';
+    document.getElementById('prog-text').textContent = '5 / 5';
+    const sb = document.getElementById('score-box');
+    sb.className = 'score-box show';
+    document.getElementById('score-num').textContent = score;
+    const msgs = [
+      ['다시 도전해봐요!','기초 표현부터 다시 복습해봐요.'],
+      ['조금 더 노력해봐요!','자주 나온 단어들을 다시 살펴봐요.'],
+      ['절반 성공!','맞힌 문제를 토대로 실력을 키워봐요.'],
+      ['잘 하고 있어요!','조금만 더 하면 완벽해요.'],
+      ['훌륭해요!','영화 속 표현을 완벽히 이해했어요.'],
+      ['만점! 완벽해요!','이제 영화를 중국어로 즐겨봐요.']
+    ];
+    const m = msgs[score];
+    document.getElementById('score-msg').textContent = m[0];
+    document.getElementById('score-sub').textContent = m[1];
+  } else {
+    render();
+  }
+}
+
+function restart() {
+  curr=0; score=0;
+  document.getElementById('quiz-area').style.display = 'block';
+  document.getElementById('score-box').className = 'score-box';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

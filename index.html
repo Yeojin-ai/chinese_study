@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汉语学习 — 중국어 AI 튜터 HSK 3→5 + TSC</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0e12;--bg2:#16161c;--bg3:#1e1e27;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --text:#e8e4d8;--text2:#8a8478;--text3:#5a5650;
+  --red:#e05c4a;--red-dim:rgba(224,92,74,0.12);--red-dim2:rgba(224,92,74,0.22);
+  --gold:#d4a844;--gold-dim:rgba(212,168,68,0.12);
+  --teal:#4ab8a0;--teal-dim:rgba(74,184,160,0.12);
+  --indigo:#7b8cde;--indigo-dim:rgba(123,140,222,0.12);
+  --green:#5ba85a;--green-dim:rgba(91,168,90,0.12);
+  --pink:#d4607a;--pink-dim:rgba(212,96,122,0.12);
+  --hsk3:#4ab8a0;--hsk3-dim:rgba(74,184,160,0.15);
+  --hsk4:#7b8cde;--hsk4-dim:rgba(123,140,222,0.15);
+  --hsk5:#e05c4a;--hsk5-dim:rgba(224,92,74,0.15);
+  --tsc:#d4a844;--tsc-dim:rgba(212,168,68,0.15);
+  --radius:8px;--radius-lg:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.logo-cn{font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;color:var(--red);letter-spacing:0.06em;line-height:1;margin-bottom:3px}
+.logo-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+.nav-section{padding:12px 10px;flex:1}
+.nav-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.14em;text-transform:uppercase;padding:0 8px;margin-bottom:5px;margin-top:10px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px;transition:background 0.15s;border:1px solid transparent}
+.nav-item:hover{background:var(--bg3)}
+.nav-item.active{background:var(--red-dim);border-color:rgba(224,92,74,0.3)}
+.nav-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;pointer-events:none}
+.nav-text{font-size:11.5px;font-weight:500;color:var(--text2);pointer-events:none}
+.nav-item.active .nav-text{color:var(--text)}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border)}
+.level-display{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px}
+.lv-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.lv-badge{font-family:'Noto Serif SC',serif;font-size:13px;font-weight:700;padding:2px 7px;border-radius:4px}
+.lv-hsk3{background:var(--hsk3-dim);color:var(--hsk3);border:1px solid rgba(74,184,160,0.3)}
+.lv-hsk4{background:var(--hsk4-dim);color:var(--hsk4);border:1px solid rgba(123,140,222,0.3)}
+.lv-hsk5{background:var(--hsk5-dim);color:var(--hsk5);border:1px solid rgba(224,92,74,0.3)}
+.lv-tsc{background:var(--tsc-dim);color:var(--tsc);border:1px solid rgba(212,168,68,0.3)}
+.lv-name{font-size:10px;color:var(--text2)}
+.sidebar-prog-bar{height:2px;background:var(--border);border-radius:2px;margin-top:4px}
+.sidebar-prog-fill{height:100%;border-radius:2px;transition:width 0.5s}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;min-height:100vh;padding:24px 28px;max-width:calc(100vw - 220px)}
+.panel{display:none;animation:fadeIn 0.3s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* SHARED */
+.page-header{margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.page-title{font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:3px}
+.page-desc{font-size:13px;color:var(--text2);line-height:1.6}
+.tag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;border-radius:20px;letter-spacing:0.04em}
+.tag-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,92,74,0.3)}
+.tag-gold{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(212,168,68,0.3)}
+.tag-teal{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(74,184,160,0.3)}
+.tag-indigo{background:var(--indigo-dim);color:var(--indigo);border:1px solid rgba(123,140,222,0.3)}
+.tag-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(91,168,90,0.3)}
+.tag-pink{background:var(--pink-dim);color:var(--pink);border:1px solid rgba(212,96,122,0.3)}
+.tag-hsk3{background:var(--hsk3-dim);color:var(--hsk3);border:1px solid rgba(74,184,160,0.3)}
+.tag-hsk4{background:var(--hsk4-dim);color:var(--hsk4);border:1px solid rgba(123,140,222,0.3)}
+.tag-hsk5{background:var(--hsk5-dim);color:var(--hsk5);border:1px solid rgba(224,92,74,0.3)}
+.tag-tsc{background:var(--tsc-dim);color:var(--tsc);border:1px solid rgba(212,168,68,0.3)}
+.sec-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.btn-primary{background:var(--red);color:white;border:none;border-radius:var(--radius);padding:9px 18px;font-size:13px;font-family:'Noto Sans KR',sans-serif;font-weight:500;cursor:pointer;transition:opacity 0.15s,transform 0.1s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary:hover{opacity:0.88;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 14px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-tts{background:var(--indigo-dim);color:var(--indigo);border:1px solid rgba(123,140,222,0.3);border-radius:var(--radius);padding:6px 12px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px}
+.btn-tts:hover{background:var(--indigo);color:white}
+.btn-mic{background:var(--green-dim);color:var(--green);border:1px solid rgba(91,168,90,0.3);border-radius:var(--radius);padding:6px 12px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px}
+.btn-mic:hover{background:var(--green);color:white}
+.btn-mic.recording{background:var(--red);color:white;border-color:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.text-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:9px 13px;font-size:13px;color:var(--text);font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color 0.15s}
+.text-input:focus{border-color:var(--border2)}
+.text-input::placeholder{color:var(--text3)}
+.word-list{display:flex;flex-direction:column;gap:8px}
+.word-item{display:grid;grid-template-columns:80px 130px 1fr auto;gap:10px;align-items:center;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);transition:border-color 0.15s}
+.word-item:hover{border-color:var(--border2)}
+.word-cn{font-family:'Noto Serif SC',serif;font-size:20px;color:var(--text)}
+.word-pinyin{font-family:'DM Mono',monospace;font-size:12px;color:var(--indigo)}
+.word-ko{font-size:12px;color:var(--text2)}
+.prog-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px}
+.prog-fill{height:100%;background:var(--red);border-radius:2px;transition:width 0.4s}
+
+/* QUIZ */
+.quiz-wrap{margin-top:12px}
+.q-prog-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.q-prog-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px}
+.q-prog-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.35s}
+.q-counter{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap}
+.q-type-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:20px;margin-bottom:8px;display:inline-block}
+.q-text{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.6;font-weight:500}
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.q-grid-4{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.qopt{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;font-size:12.5px;font-family:'Noto Sans KR',sans-serif;color:var(--text);cursor:pointer;text-align:left;transition:all 0.15s;display:flex;align-items:center;gap:9px}
+.qopt:before{content:attr(data-idx);font-family:'DM Mono',monospace;font-size:10px;width:19px;height:19px;border-radius:4px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text3)}
+.qopt:hover:not(:disabled){border-color:var(--border2);background:var(--bg2)}
+.qopt.correct{background:var(--green-dim);border-color:rgba(91,168,90,0.5);color:var(--green)}
+.qopt.correct:before{background:var(--green);border-color:var(--green);color:white;content:'✓'}
+.qopt.wrong{background:var(--red-dim);border-color:rgba(224,92,74,0.5);color:var(--red)}
+.qopt.wrong:before{background:var(--red);border-color:var(--red);color:white;content:'✗'}
+.q-fill-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;font-size:14px;font-family:'Noto Serif SC',serif;color:var(--text);outline:none;margin-bottom:8px;letter-spacing:0.05em}
+.q-fill-input:focus{border-color:var(--border2)}
+.q-fill-row{display:flex;gap:8px;margin-bottom:12px}
+.q-feedback{font-size:12px;padding:10px 14px;border-radius:var(--radius);margin-bottom:10px;line-height:1.7;display:none}
+.q-feedback.show{display:block}
+.q-feedback.correct{background:var(--green-dim);color:var(--green);border-left:3px solid var(--green)}
+.q-feedback.wrong{background:var(--red-dim);color:var(--red);border-left:3px solid var(--red)}
+.q-feedback.info{background:var(--indigo-dim);color:var(--indigo);border-left:3px solid var(--indigo)}
+.q-next{background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 20px;font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:none;transition:all 0.15s}
+.q-next:hover{background:var(--bg3)}
+.q-next.show{display:inline-block}
+.score-screen{text-align:center;padding:28px 16px;display:none}
+.score-screen.show{display:block}
+.score-ring{width:88px;height:88px;border-radius:50%;background:var(--red-dim);border:2px solid rgba(224,92,74,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 14px}
+.score-big{font-family:'Noto Serif SC',serif;font-size:28px;font-weight:700;color:var(--text)}
+.score-denom{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+.score-msg{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.score-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.score-breakdown{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.score-type{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;text-align:center;font-size:11px;color:var(--text2)}
+.score-type strong{display:block;font-family:'DM Mono',monospace;font-size:16px;color:var(--text)}
+
+/* LESSON */
+.lesson-hero{background:linear-gradient(135deg,var(--red-dim) 0%,var(--bg3) 100%);border:1px solid rgba(224,92,74,0.2);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.lesson-title{font-family:'Noto Serif SC',serif;font-size:17px;color:var(--text);margin-bottom:3px}
+.lesson-subtitle{font-size:12px;color:var(--text2)}
+.lesson-clock{font-family:'DM Mono',monospace;font-size:32px;color:var(--red);font-weight:500;line-height:1}
+.lesson-clock-label{font-size:9px;color:var(--text3);text-align:center;margin-top:2px;letter-spacing:0.08em}
+.lesson-level-select{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.lesson-lv-btn{padding:9px 6px;border-radius:var(--radius);border:1px solid var(--border);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text2);background:transparent;transition:all 0.15s;text-align:center;letter-spacing:0.03em;line-height:1.4}
+.lesson-lv-btn:hover{background:var(--bg3)}
+.lesson-lv-btn.active-hsk3{background:var(--hsk3-dim);color:var(--hsk3);border-color:rgba(74,184,160,0.3)}
+.lesson-lv-btn.active-hsk4{background:var(--hsk4-dim);color:var(--hsk4);border-color:rgba(123,140,222,0.3)}
+.lesson-lv-btn.active-hsk5{background:var(--hsk5-dim);color:var(--hsk5);border-color:rgba(224,92,74,0.3)}
+.lesson-lv-btn.active-tsc{background:var(--tsc-dim);color:var(--tsc);border-color:rgba(212,168,68,0.3)}
+.lesson-steps{display:flex;flex-direction:column;gap:0}
+.lesson-step{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:5px;background:var(--bg2);cursor:pointer;transition:all 0.18s;position:relative}
+.lesson-step:hover{border-color:var(--border2);background:var(--bg3)}
+.lesson-step.active-step{border-color:rgba(224,92,74,0.4);background:var(--red-dim)}
+.lesson-step.done{opacity:0.55}
+.step-circle{width:26px;height:26px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;transition:all 0.18s}
+.lesson-step.active-step .step-circle{background:var(--red);border-color:var(--red);color:white}
+.lesson-step.done .step-circle{background:var(--green);border-color:var(--green);color:white}
+.step-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.step-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.time-chip{position:absolute;right:12px;top:12px;font-family:'DM Mono',monospace;font-size:10px;background:var(--bg3);color:var(--text3);padding:2px 7px;border-radius:20px;border:1px solid var(--border)}
+.lesson-content-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-top:12px;display:none}
+.lesson-content-box.show{display:block}
+
+/* SPEAKING / VOICE PANEL */
+.voice-hero{background:linear-gradient(135deg,rgba(91,168,90,0.1) 0%,var(--bg3) 100%);border:1px solid rgba(91,168,90,0.2);border-radius:var(--radius-lg);padding:20px;margin-bottom:18px;text-align:center}
+.voice-hero h2{font-family:'Noto Serif SC',serif;font-size:19px;color:var(--text);margin-bottom:6px}
+.voice-hero p{font-size:12px;color:var(--text2);line-height:1.7}
+.voice-tabs{display:flex;gap:6px;margin-bottom:16px}
+.voice-tab{flex:1;padding:9px;border-radius:var(--radius);border:1px solid var(--border);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;color:var(--text2);background:transparent;transition:all 0.15s;text-align:center;font-weight:500}
+.voice-tab.active{background:var(--green-dim);color:var(--green);border-color:rgba(91,168,90,0.35)}
+.voice-section{display:none}
+.voice-section.show{display:block}
+
+/* LISTEN & REPEAT */
+.listen-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px;text-align:center}
+.listen-cn{font-family:'Noto Serif SC',serif;font-size:36px;color:var(--text);margin-bottom:6px;letter-spacing:0.08em}
+.listen-pinyin{font-family:'DM Mono',monospace;font-size:16px;color:var(--indigo);margin-bottom:6px}
+.listen-ko{font-size:13px;color:var(--text2);margin-bottom:16px}
+.listen-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.rec-result{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:12px;display:none}
+.rec-result.show{display:block}
+.rec-text{font-family:'Noto Serif SC',serif;font-size:18px;color:var(--text);margin-bottom:6px}
+.rec-score{display:flex;gap:8px;align-items:center}
+.score-bar-wrap{flex:1;height:6px;background:var(--bg2);border-radius:3px}
+.score-bar-fill{height:100%;border-radius:3px;transition:width 0.5s}
+.tone-practice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.tone-prac-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.tone-prac-char{font-family:'Noto Serif SC',serif;font-size:28px;margin-bottom:4px}
+.tone-prac-py{font-family:'DM Mono',monospace;font-size:14px;color:var(--indigo);margin-bottom:4px}
+.tone-prac-desc{font-size:11px;color:var(--text3);margin-bottom:10px}
+.shadow-list{display:flex;flex-direction:column;gap:10px}
+.shadow-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.shadow-cn{font-family:'Noto Serif SC',serif;font-size:17px;color:var(--text);margin-bottom:4px}
+.shadow-py{font-family:'DM Mono',monospace;font-size:11px;color:var(--indigo);margin-bottom:4px}
+.shadow-ko{font-size:12px;color:var(--text3);margin-bottom:10px}
+.shadow-controls{display:flex;gap:8px}
+.shadow-speed{display:flex;gap:5px}
+.speed-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--border);font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text3);background:transparent;transition:all 0.15s}
+.speed-btn.active{background:var(--indigo-dim);color:var(--indigo);border-color:rgba(123,140,222,0.3)}
+
+/* VOICE CHAT */
+.vchat-window{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;height:300px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.vchat-window::-webkit-scrollbar{width:4px}
+.vchat-window::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.av-ai{background:var(--red-dim);color:var(--red);font-weight:700;font-family:'Noto Serif SC',serif}
+.av-user{background:var(--indigo-dim);color:var(--indigo);font-weight:600}
+.bubble{padding:9px 13px;border-radius:12px;font-size:13px;max-width:76%;line-height:1.7}
+.bubble-ai{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:4px 12px 12px 12px}
+.bubble-user{background:var(--indigo-dim);border:1px solid rgba(123,140,222,0.3);color:var(--text);border-radius:12px 4px 12px 12px}
+.bubble .tts-row{margin-top:6px;display:flex;gap:6px}
+.correction-tag{display:inline-block;margin-top:5px;font-size:11px;background:var(--gold-dim);color:var(--gold);padding:2px 9px;border-radius:var(--radius);border:1px solid rgba(212,168,68,0.3)}
+.vchat-controls{display:flex;gap:8px;align-items:center}
+.mic-big{width:52px;height:52px;border-radius:50%;border:2px solid var(--green);background:var(--green-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all 0.2s;flex-shrink:0}
+.mic-big:hover{background:var(--green);color:white}
+.mic-big.recording{background:var(--red);border-color:var(--red);animation:pulse 1s infinite}
+.mic-status{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.chat-settings{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.setting-chip{padding:5px 10px;border-radius:20px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--text2);background:transparent;transition:all 0.15s}
+.setting-chip.active{background:var(--indigo-dim);color:var(--indigo);border-color:rgba(123,140,222,0.35)}
+.chat-input-row{display:flex;gap:8px}
+
+/* ROADMAP */
+.roadmap-hero{background:linear-gradient(135deg,rgba(74,184,160,0.08) 0%,rgba(123,140,222,0.08) 50%,rgba(224,92,74,0.08) 100%);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;text-align:center}
+.roadmap-hero h2{font-family:'Noto Serif SC',serif;font-size:19px;color:var(--text);margin-bottom:5px}
+.roadmap-hero p{font-size:12px;color:var(--text2);line-height:1.7}
+.roadmap-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.level-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.level-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.level-card.hsk3::before{background:var(--hsk3)}
+.level-card.hsk4::before{background:var(--hsk4)}
+.level-card.hsk5::before{background:var(--hsk5)}
+.level-card.tsc::before{background:var(--tsc)}
+.level-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+.level-card.current{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,168,68,0.3)}
+.lc-title{font-family:'Noto Serif SC',serif;font-size:19px;font-weight:700;margin-bottom:3px}
+.hsk3 .lc-title{color:var(--hsk3)}.hsk4 .lc-title{color:var(--hsk4)}.hsk5 .lc-title{color:var(--hsk5)}.tsc .lc-title{color:var(--tsc)}
+.lc-sub{font-size:10px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace}
+.lc-info{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.lc-prog-wrap{height:3px;background:var(--bg3);border-radius:2px;margin-bottom:6px}
+.lc-prog{height:100%;border-radius:2px;transition:width 0.5s}
+.hsk3 .lc-prog{background:var(--hsk3)}.hsk4 .lc-prog{background:var(--hsk4)}.hsk5 .lc-prog{background:var(--hsk5)}.tsc .lc-prog{background:var(--tsc)}
+.lc-prog-label{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+.current-badge{position:absolute;top:12px;right:12px;font-family:'DM Mono',monospace;font-size:9px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(212,168,68,0.3);padding:2px 7px;border-radius:20px;letter-spacing:0.06em}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:16px}
+.day-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 3px;text-align:center;cursor:pointer;transition:all 0.15s;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.day-cell:hover{border-color:var(--border2)}
+.day-cell.today{border-color:var(--gold);background:var(--gold-dim)}
+.day-cell.done{background:var(--green-dim);border-color:rgba(91,168,90,0.3)}
+.day-cell.locked{opacity:0.35;cursor:not-allowed}
+.day-cell.active-day{border-color:var(--red);background:var(--red-dim)}
+.day-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+.day-topic{font-size:9px;color:var(--text2);line-height:1.3;text-align:center}
+.day-icon{font-size:13px}
+.days-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.days-header h3{font-size:13px;font-weight:600;color:var(--text)}
+.week-nav{display:flex;gap:5px;align-items:center}
+.week-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)}
+.roadmap-streak{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.streak-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+.streak-num{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--text)}
+.streak-label{font-size:10px;color:var(--text3);margin-top:3px}
+.streak-card.highlight{background:var(--gold-dim);border-color:rgba(212,168,68,0.3)}
+.streak-card.highlight .streak-num{color:var(--gold)}
+
+/* TSC PANEL */
+.tsc-hero{background:linear-gradient(135deg,rgba(212,168,68,0.1) 0%,var(--bg3) 100%);border:1px solid rgba(212,168,68,0.2);border-radius:var(--radius-lg);padding:20px;margin-bottom:18px}
+.tsc-hero h2{font-family:'Noto Serif SC',serif;font-size:18px;color:var(--tsc);margin-bottom:5px}
+.tsc-hero p{font-size:12px;color:var(--text2);line-height:1.7}
+.tsc-levels-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.tsc-lv-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden}
+.tsc-lv-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.tsc-lv-card.lv1::after{background:#4ab8a0}
+.tsc-lv-card.lv2::after{background:#7b8cde}
+.tsc-lv-card.lv3::after{background:#d4a844}
+.tsc-lv-card.lv4::after{background:#e05c4a}
+.tsc-lv-card.lv5::after{background:#d4607a}
+.tsc-lv-card.selected{border-color:var(--gold);background:var(--gold-dim)}
+.tsc-lv-card:hover{border-color:var(--border2)}
+.tsc-lv-title{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.tsc-lv-sub{font-size:11px;color:var(--text2);line-height:1.5}
+.tsc-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tsc-tab{padding:6px 12px;border-radius:20px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--text2);background:transparent;transition:all 0.15s}
+.tsc-tab.active{background:var(--tsc-dim);color:var(--tsc);border-color:rgba(212,168,68,0.35)}
+.tsc-section{display:none}
+.tsc-section.show{display:block}
+.tsc-speak-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;text-align:center;margin-bottom:14px}
+.tsc-prompt{font-size:14px;color:var(--text2);margin-bottom:10px;line-height:1.7}
+.tsc-topic{font-family:'Noto Serif SC',serif;font-size:22px;color:var(--tsc);margin-bottom:6px}
+.tsc-topic-ko{font-size:13px;color:var(--text2);margin-bottom:16px}
+.tsc-timer{font-family:'DM Mono',monospace;font-size:28px;color:var(--tsc);font-weight:500;margin-bottom:14px}
+.tsc-sample{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:12px;text-align:left;display:none}
+.tsc-sample.show{display:block}
+.tsc-sample-cn{font-family:'Noto Serif SC',serif;font-size:15px;color:var(--text);line-height:1.8;margin-bottom:8px}
+.tsc-sample-ko{font-size:12px;color:var(--text2);line-height:1.7}
+.tsc-scoring{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:10px}
+.tsc-score-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tsc-score-label{font-size:12px;color:var(--text2);width:60px;flex-shrink:0}
+.tsc-score-bar{flex:1;height:4px;background:var(--bg2);border-radius:2px}
+.tsc-score-fill{height:100%;border-radius:2px;background:var(--tsc);transition:width 0.6s}
+.tsc-score-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--tsc);width:30px;text-align:right}
+.tsc-vocab-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px}
+.tsc-vocab-cn{font-family:'Noto Serif SC',serif;font-size:18px;color:var(--text);margin-bottom:3px}
+.tsc-vocab-py{font-family:'DM Mono',monospace;font-size:11px;color:var(--indigo);margin-bottom:3px}
+.tsc-vocab-ko{font-size:12px;color:var(--text2);margin-bottom:8px}
+.tsc-vocab-ex{font-size:12px;color:var(--text3);border-left:2px solid var(--tsc);padding-left:8px;line-height:1.6}
+.tsc-grammar-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;border-left:3px solid var(--tsc)}
+.tsc-pattern{font-family:'DM Mono',monospace;font-size:13px;color:var(--tsc);background:var(--tsc-dim);padding:6px 12px;border-radius:var(--radius);display:inline-block;margin-bottom:10px}
+.tsc-note{font-size:12px;color:var(--text2);background:var(--bg2);padding:8px 12px;border-radius:var(--radius);border-left:2px solid var(--gold);margin-bottom:12px;line-height:1.7}
+.tsc-ex-cn{font-family:'Noto Serif SC',serif;font-size:15px;color:var(--text);margin-bottom:2px}
+.tsc-ex-py{font-family:'DM Mono',monospace;font-size:10px;color:var(--indigo);margin-bottom:2px}
+.tsc-ex-ko{font-size:11px;color:var(--text3);margin-bottom:10px}
+
+/* GRAMMAR */
+.grammar-level-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.g-lv-tab{padding:6px 13px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text2);background:transparent;transition:all 0.15s;letter-spacing:0.04em}
+.g-lv-tab.active-hsk3{background:var(--hsk3-dim);color:var(--hsk3);border-color:rgba(74,184,160,0.35)}
+.g-lv-tab.active-hsk4{background:var(--hsk4-dim);color:var(--hsk4);border-color:rgba(123,140,222,0.35)}
+.g-lv-tab.active-hsk5{background:var(--hsk5-dim);color:var(--hsk5);border-color:rgba(224,92,74,0.35)}
+.grammar-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.g-tab{padding:6px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;color:var(--text2);cursor:pointer;transition:all 0.15s;background:transparent}
+.g-tab:hover{background:var(--bg3)}
+.g-tab.active{background:var(--teal-dim);color:var(--teal);border-color:rgba(74,184,160,0.35)}
+.grammar-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;display:none}
+.grammar-card.show{display:block}
+.grammar-card.hsk3-card{border-left:3px solid var(--hsk3)}
+.grammar-card.hsk4-card{border-left:3px solid var(--hsk4)}
+.grammar-card.hsk5-card{border-left:3px solid var(--hsk5)}
+.pattern-box{font-family:'DM Mono',monospace;font-size:13px;padding:7px 12px;border-radius:var(--radius);display:inline-block;margin-bottom:10px;letter-spacing:0.03em}
+.p3{color:var(--hsk3);background:var(--hsk3-dim)}
+.p4{color:var(--hsk4);background:var(--hsk4-dim)}
+.p5{color:var(--hsk5);background:var(--hsk5-dim)}
+.g-metaphor{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7;padding:8px 12px;background:var(--bg2);border-radius:var(--radius);border-left:2px solid var(--gold)}
+.example-row{margin-bottom:9px}
+.ex-cn{font-family:'Noto Serif SC',serif;font-size:16px;color:var(--text);margin-bottom:2px}
+.ex-pinyin{font-family:'DM Mono',monospace;font-size:11px;color:var(--indigo);margin-bottom:2px}
+.ex-ko{font-size:12px;color:var(--text3)}
+.grammar-group{display:none}
+.grammar-group.show{display:block}
+
+/* FLASHCARD */
+.fc-hsk-select{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.fc-hsk-btn{flex:1;padding:7px;border-radius:var(--radius);border:1px solid var(--border);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text2);background:transparent;transition:all 0.15s;letter-spacing:0.04em;min-width:60px}
+.fc-hsk-btn.active-hsk3{background:var(--hsk3-dim);color:var(--hsk3);border-color:rgba(74,184,160,0.3)}
+.fc-hsk-btn.active-hsk4{background:var(--hsk4-dim);color:var(--hsk4);border-color:rgba(123,140,222,0.3)}
+.fc-hsk-btn.active-hsk5{background:var(--hsk5-dim);color:var(--hsk5);border-color:rgba(224,92,74,0.3)}
+.fc-hsk-btn.active-tsc{background:var(--tsc-dim);color:var(--tsc);border-color:rgba(212,168,68,0.3)}
+.fc-header-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.fc-counter{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)}
+.flashcard-wrap{perspective:900px;height:180px;cursor:pointer;margin-bottom:12px;user-select:none}
+.flashcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1)}
+.flashcard-wrap.flipped .flashcard-inner{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--radius-lg);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:18px}
+.fc-front{background:var(--bg2)}
+.fc-back{background:var(--bg3);transform:rotateY(180deg);border-color:rgba(212,168,68,0.3)}
+.fc-cn{font-family:'Noto Serif SC',serif;font-size:42px;color:var(--text);font-weight:700}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:5px}
+.fc-level-tag{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:20px;margin-top:3px}
+.fc-pinyin{font-family:'DM Mono',monospace;font-size:16px;color:var(--gold)}
+.fc-meaning{font-size:14px;color:var(--text);font-weight:500}
+.fc-example{font-size:11px;color:var(--text2);text-align:center;line-height:1.6;margin-top:5px}
+.fc-rating{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.fc-btn{padding:8px;border-radius:var(--radius);border:1px solid transparent;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s;font-weight:500}
+.fc-btn-hard{background:var(--red-dim);color:var(--red);border-color:rgba(224,92,74,0.3)}
+.fc-btn-ok{background:var(--gold-dim);color:var(--gold);border-color:rgba(212,168,68,0.3)}
+.fc-btn-easy{background:var(--green-dim);color:var(--green);border-color:rgba(91,168,90,0.3)}
+.fc-btn:hover{opacity:0.8;transform:translateY(-1px)}
+.fc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.fc-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:11px;text-align:center}
+.fc-stat-num{font-family:'DM Mono',monospace;font-size:19px;color:var(--text);font-weight:500}
+.fc-stat-label{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* PRONUNCIATION */
+.tone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.tone-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px;text-align:center;transition:all 0.18s;cursor:pointer}
+.tone-card:hover{transform:translateY(-2px)}
+.tone-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:5px;letter-spacing:0.1em}
+.tone-char{font-family:'Noto Serif SC',serif;font-size:28px;margin-bottom:4px}
+.tone-mark{font-size:18px;font-weight:700;margin-bottom:4px}
+.tone-curve{font-size:22px;margin-bottom:3px}
+.tone-desc{font-size:11px;color:var(--text3);line-height:1.5}
+.t1{border-top:3px solid #7b8cde}.t1 .tone-mark{color:#7b8cde}
+.t2{border-top:3px solid #4ab8a0}.t2 .tone-mark{color:#4ab8a0}
+.t3{border-top:3px solid #d4a844}.t3 .tone-mark{color:#d4a844}
+.t4{border-top:3px solid #e05c4a}.t4 .tone-mark{color:#e05c4a}
+.tip-list{display:flex;flex-direction:column;gap:7px}
+.tip-item{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius)}
+.tip-num{width:20px;height:20px;border-radius:4px;background:var(--red-dim);color:var(--red);font-size:10px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tip-text{font-size:12px;color:var(--text2);line-height:1.7}
+.tip-text strong{color:var(--text)}
+.analysis-result{margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;display:none}
+.analysis-result.show{display:block}
+.input-row{display:flex;gap:8px}
+
+/* CULTURE */
+.hsk-filter{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.hsk-filter-btn{padding:5px 11px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text2);background:transparent;transition:all 0.15s;letter-spacing:0.04em}
+.hsk-filter-btn.active-hsk3{background:var(--hsk3-dim);color:var(--hsk3);border-color:rgba(74,184,160,0.35)}
+.hsk-filter-btn.active-hsk4{background:var(--hsk4-dim);color:var(--hsk4);border-color:rgba(123,140,222,0.35)}
+.hsk-filter-btn.active-hsk5{background:var(--hsk5-dim);color:var(--hsk5);border-color:rgba(224,92,74,0.35)}
+.hsk-topic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.topic-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:11px;cursor:pointer;transition:all 0.18s;text-align:center}
+.topic-card:hover{border-color:var(--red);background:var(--red-dim)}
+.topic-card.selected{border-color:var(--red);background:var(--red-dim2)}
+.topic-icon{font-size:18px;margin-bottom:4px}
+.topic-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.topic-sub{font-size:9px;color:var(--text3)}
+.topic-hsk{font-family:'DM Mono',monospace;font-size:9px;margin-top:3px;padding:1px 6px;border-radius:10px;display:inline-block}
+.topic-hsk.h3{background:var(--hsk3-dim);color:var(--hsk3)}
+.topic-hsk.h4{background:var(--hsk4-dim);color:var(--hsk4)}
+.topic-hsk.h5{background:var(--hsk5-dim);color:var(--hsk5)}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mb-8{margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-cn">汉语学习</div>
+    <div class="logo-sub">HSK 3→5 + TSC</div>
+  </div>
+  <nav class="nav-section">
+    <div class="nav-label">학습 로드맵</div>
+    <div class="nav-item active" onclick="showPanel('roadmap',this)">
+      <div class="nav-icon" style="background:var(--gold-dim)">🗺️</div>
+      <span class="nav-text">학습 로드맵</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('lesson',this)">
+      <div class="nav-icon" style="background:var(--red-dim)">📚</div>
+      <span class="nav-text">일일 레슨 (10분)</span>
+    </div>
+    <div class="nav-label">회화 특화</div>
+    <div class="nav-item" onclick="showPanel('speaking',this)">
+      <div class="nav-icon" style="background:var(--green-dim)">🎙️</div>
+      <span class="nav-text">음성 회화 학습</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('tsc',this)">
+      <div class="nav-icon" style="background:var(--tsc-dim)">🏅</div>
+      <span class="nav-text">TSC 시험 대비</span>
+    </div>
+    <div class="nav-label">학습 도구</div>
+    <div class="nav-item" onclick="showPanel('culture',this)">
+      <div class="nav-icon" style="background:var(--red-dim)">🎬</div>
+      <span class="nav-text">문화 몰입</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('flashcard',this)">
+      <div class="nav-icon" style="background:var(--teal-dim)">🃏</div>
+      <span class="nav-text">메모리 카드</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('grammar',this)">
+      <div class="nav-icon" style="background:var(--indigo-dim)">📐</div>
+      <span class="nav-text">문법</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('pronunciation',this)">
+      <div class="nav-icon" style="background:var(--gold-dim)">🎵</div>
+      <span class="nav-text">발음 트레이너</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="level-display">
+      <div class="lv-row">
+        <span class="lv-badge lv-hsk3" id="sb-lv-badge">HSK 3</span>
+        <span class="lv-name" id="sb-lv-name">기초 완성</span>
+      </div>
+      <div class="sidebar-prog-bar">
+        <div class="sidebar-prog-fill" id="sb-prog" style="width:12%;background:var(--hsk3)"></div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:3px" id="sb-prog-label">Day 3 / 24</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ═══ ROADMAP ═══ -->
+<section id="panel-roadmap" class="panel active">
+  <div class="page-header">
+    <div><div class="page-title">학습 로드맵</div><div class="page-desc">HSK 3→4→5 + TSC 단계별 커리큘럼 — 하루 10분</div></div>
+    <span class="tag tag-gold">96일 과정</span>
+  </div>
+  <div class="roadmap-hero">
+    <h2>나의 중국어 여정 🏆</h2>
+    <p>HSK 3급(기초) → HSK 4급(일상) → HSK 5급(고급) → TSC(말하기 시험)<br>각 단계 24일 × 4단계 = 총 96일 마스터 플랜</p>
+  </div>
+  <div class="sec-label">단계별 커리큘럼</div>
+  <div class="roadmap-levels">
+    <div class="level-card hsk3 current" onclick="selectRoadmapLevel(3)">
+      <div class="current-badge">현재 학습</div>
+      <div class="lc-title">HSK 3</div>
+      <div class="lc-sub">기초 완성 · Day 1–24</div>
+      <div class="lc-info">是/有/在, 比교문, 过 경험, 방향보어 등 기본 문법과 필수 어휘 600개</div>
+      <div class="lc-prog-wrap"><div class="lc-prog" style="width:12%"></div></div>
+      <div class="lc-prog-label">3 / 24일</div>
+    </div>
+    <div class="level-card hsk4" onclick="selectRoadmapLevel(4)">
+      <div class="lc-title">HSK 4</div>
+      <div class="lc-sub">일상 확장 · Day 25–48</div>
+      <div class="lc-info">把/被 구문, 是…的, 如果…就 등 중급 문법과 감정·사회 어휘 1200개</div>
+      <div class="lc-prog-wrap"><div class="lc-prog" style="width:0%"></div></div>
+      <div class="lc-prog-label">0 / 24일</div>
+    </div>
+    <div class="level-card hsk5" onclick="selectRoadmapLevel(5)">
+      <div class="lc-title">HSK 5</div>
+      <div class="lc-sub">고급 표현 · Day 49–72</div>
+      <div class="lc-info">连…都, 程度补语, 복문 구조 등 고급 표현과 심화 어휘 2500개</div>
+      <div class="lc-prog-wrap"><div class="lc-prog" style="width:0%"></div></div>
+      <div class="lc-prog-label">0 / 24일</div>
+    </div>
+    <div class="level-card tsc" onclick="selectRoadmapLevel('tsc')">
+      <div class="lc-title">TSC</div>
+      <div class="lc-sub">말하기 시험 · Day 73–96</div>
+      <div class="lc-info">TSC 1~5급 말하기 훈련, 발음·성조·유창성 집중 연습, 실전 모의고사</div>
+      <div class="lc-prog-wrap"><div class="lc-prog" style="width:0%"></div></div>
+      <div class="lc-prog-label">0 / 24일</div>
+    </div>
+  </div>
+  <div class="roadmap-days">
+    <div class="days-header">
+      <h3 id="rm-week-title">HSK 3급 · 1주차 — 기본 문법 &amp; 인사</h3>
+      <div class="week-nav">
+        <button class="btn-ghost" onclick="changeWeek(-1)">←</button>
+        <span class="week-label" id="rm-week-label">Week 1</span>
+        <button class="btn-ghost" onclick="changeWeek(1)">→</button>
+      </div>
+    </div>
+    <div class="day-grid" id="day-grid"></div>
+  </div>
+  <div class="sec-label">학습 통계</div>
+  <div class="roadmap-streak">
+    <div class="streak-card highlight"><div class="streak-num">3</div><div class="streak-label">🔥 연속 학습일</div></div>
+    <div class="streak-card"><div class="streak-num">3</div><div class="streak-label">📅 총 학습일</div></div>
+    <div class="streak-card"><div class="streak-num">45</div><div class="streak-label">📖 학습 단어</div></div>
+    <div class="streak-card"><div class="streak-num">30</div><div class="streak-label">⏱ 총 학습분</div></div>
+  </div>
+</section>
+
+<!-- ═══ LESSON ═══ -->
+<section id="panel-lesson" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">일일 레슨</div><div class="page-desc">10분 집중 — 어휘 → 문법 → 퀴즈 10문제</div></div>
+    <span class="tag tag-red">10분 · 퀴즈 10문제</span>
+  </div>
+  <div class="lesson-level-select">
+    <button class="lesson-lv-btn active-hsk3" id="lv-btn-3" onclick="selectLessonLevel(3)">HSK 3급<br><span style="font-size:9px;opacity:0.7">기초</span></button>
+    <button class="lesson-lv-btn" id="lv-btn-4" onclick="selectLessonLevel(4)">HSK 4급<br><span style="font-size:9px;opacity:0.7">일상</span></button>
+    <button class="lesson-lv-btn" id="lv-btn-5" onclick="selectLessonLevel(5)">HSK 5급<br><span style="font-size:9px;opacity:0.7">고급</span></button>
+    <button class="lesson-lv-btn" id="lv-btn-tsc" onclick="selectLessonLevel('tsc')">TSC<br><span style="font-size:9px;opacity:0.7">말하기</span></button>
+  </div>
+  <div class="lesson-hero">
+    <div>
+      <div class="lesson-title" id="lesson-main-title">오늘의 레슨: 是/有/在 구문</div>
+      <div class="lesson-subtitle" id="lesson-main-sub">어휘 5개 · 문법 1개 · 퀴즈 10문제 · HSK 3급</div>
+      <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="startLesson()">▶ 시작</button>
+        <button class="btn-ghost" onclick="nextLessonDay()">다음 주제 →</button>
+        <button class="btn-ghost" onclick="resetLesson()">↺ 다시</button>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <div class="lesson-clock" id="lesson-clock">10:00</div>
+      <div class="lesson-clock-label">남은 시간</div>
+    </div>
+  </div>
+  <div class="lesson-steps">
+    <div class="lesson-step active-step" id="step-1" onclick="openStep(1)">
+      <div class="step-circle">1</div>
+      <div><div class="step-title">어휘 학습</div><div class="step-desc" id="s1-desc">핵심 단어 5개 — 예문과 함께 듣기</div></div>
+      <div class="time-chip">3분</div>
+    </div>
+    <div class="lesson-step" id="step-2" onclick="openStep(2)">
+      <div class="step-circle">2</div>
+      <div><div class="step-title">문법 포인트</div><div class="step-desc" id="s2-desc">핵심 문법 1개 — 비유로 쉽게</div></div>
+      <div class="time-chip">3분</div>
+    </div>
+    <div class="lesson-step" id="step-3" onclick="openStep(3)">
+      <div class="step-circle">3</div>
+      <div><div class="step-title">종합 퀴즈 10문제</div><div class="step-desc">4지선다 6문제 + 빈칸채우기 4문제</div></div>
+      <div class="time-chip">4분</div>
+    </div>
+  </div>
+  <div class="lesson-content-box" id="lesson-content">
+    <div id="lesson-content-inner"></div>
+  </div>
+</section>
+
+<!-- ═══ SPEAKING / VOICE ═══ -->
+<section id="panel-speaking" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">음성 회화 학습</div><div class="page-desc">듣고 따라하기 · 섀도잉 · 음성 대화 — 실제 말하기로 중국어를 익혀요</div></div>
+    <span class="tag tag-green">음성 학습</span>
+  </div>
+  <div class="voice-hero">
+    <h2>🎙️ 말하기가 실력이다</h2>
+    <p>발음을 듣고 → 따라하고 → 녹음해서 비교해요<br>브라우저 TTS(텍스트→음성)와 마이크 녹음을 활용해요</p>
+  </div>
+  <div class="voice-tabs">
+    <button class="voice-tab active" onclick="switchVoiceTab('listen',this)">👂 듣고 따라하기</button>
+    <button class="voice-tab" onclick="switchVoiceTab('shadow',this)">🔁 섀도잉 연습</button>
+    <button class="voice-tab" onclick="switchVoiceTab('vchat',this)">💬 음성 대화</button>
+    <button class="voice-tab" onclick="switchVoiceTab('tone',this)">🎼 성조 훈련</button>
+  </div>
+
+  <!-- 듣고 따라하기 -->
+  <div class="voice-section show" id="vs-listen">
+    <div class="sec-label">레벨 선택</div>
+    <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="fc-hsk-btn active-hsk3" id="lt-hsk3" onclick="selectListenLevel(3,this)">HSK 3</button>
+      <button class="fc-hsk-btn" id="lt-hsk4" onclick="selectListenLevel(4,this)">HSK 4</button>
+      <button class="fc-hsk-btn" id="lt-hsk5" onclick="selectListenLevel(5,this)">HSK 5</button>
+      <button class="fc-hsk-btn" id="lt-hsktsc" onclick="selectListenLevel('tsc',this)">TSC</button>
+    </div>
+    <div class="listen-card">
+      <div class="listen-cn" id="lt-cn">你好，很高兴认识你！</div>
+      <div class="listen-pinyin" id="lt-pinyin">Nǐ hǎo, hěn gāoxìng rènshi nǐ!</div>
+      <div class="listen-ko" id="lt-ko">안녕하세요, 만나서 반갑습니다!</div>
+      <div class="listen-controls">
+        <button class="btn-tts" onclick="speakChinese(document.getElementById('lt-cn').textContent, 0.8)">🔊 느리게 듣기</button>
+        <button class="btn-tts" onclick="speakChinese(document.getElementById('lt-cn').textContent, 1.0)">🔊 보통 속도</button>
+        <button class="btn-tts" onclick="speakChinese(document.getElementById('lt-cn').textContent, 1.3)">🔊 빠르게</button>
+        <button class="btn-mic" id="lt-mic-btn" onclick="toggleListenMic()">🎤 따라 읽기</button>
+      </div>
+    </div>
+    <div class="rec-result" id="lt-rec-result">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace">인식된 발화</div>
+      <div class="rec-text" id="lt-rec-text">—</div>
+      <div style="font-size:11px;color:var(--text3);margin:8px 0 4px">발음 정확도</div>
+      <div class="rec-score">
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="lt-score-bar" style="width:0%"></div></div>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tsc);margin-left:8px" id="lt-score-pct">0%</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn-ghost" onclick="prevListenCard()">← 이전</button>
+      <button class="btn-primary" onclick="nextListenCard()">다음 문장 →</button>
+    </div>
+    <div style="margin-top:16px">
+      <div class="sec-label">전체 문장 목록</div>
+      <div id="lt-list" style="display:flex;flex-direction:column;gap:7px"></div>
+    </div>
+  </div>
+
+  <!-- 섀도잉 -->
+  <div class="voice-section" id="vs-shadow">
+    <div class="sec-label">섀도잉이란?</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.8;border-left:3px solid var(--green)">
+      🔁 <strong style="color:var(--text)">섀도잉(Shadowing)</strong>은 원어민 발음을 들으면서 <em>동시에</em> 따라 말하는 고급 훈련법이에요.<br>
+      ① 먼저 전체를 들어요 → ② 한 박자 늦게 따라 말해요 → ③ 반복하면 리듬과 억양이 자연스러워져요
+    </div>
+    <div class="sec-label">섀도잉 문장</div>
+    <div class="shadow-list" id="shadow-list"></div>
+  </div>
+
+  <!-- 음성 대화 -->
+  <div class="voice-section" id="vs-vchat">
+    <!-- API 키 설정 -->
+    <div id="vchat-api-box" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;align-items:center">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap">API KEY</span>
+      <input class="text-input" id="vchat-api-key" type="password" placeholder="Google AI Studio API 키 입력 (AIza...)" style="flex:1;font-family:'DM Mono',monospace;font-size:11px" />
+      <button class="btn-primary" style="font-size:11px;padding:6px 12px;white-space:nowrap" onclick="confirmApiKey()">저장</button>
+    </div>
+    <div id="vchat-api-saved" style="display:none;background:var(--green-dim);border:1px solid rgba(91,168,90,0.3);border-radius:var(--radius);padding:8px 14px;margin-bottom:12px;align-items:center;justify-content:space-between">
+      <span style="font-size:12px;color:var(--green)">🔑 API 키 설정됨</span>
+      <button class="btn-ghost" style="font-size:10px;padding:3px 9px" onclick="changeApiKey()">변경</button>
+    </div>
+    <div class="chat-settings">
+      <button class="setting-chip active" id="chip-cafe" onclick="toggleChip(this)">☕ 카페 모드</button>
+      <button class="setting-chip" id="chip-biz" onclick="toggleChip(this)">🏢 비즈니스</button>
+      <button class="setting-chip active" id="chip-correct" onclick="toggleChip(this)">🔄 오류 수정</button>
+      <button class="setting-chip" id="chip-korean" onclick="toggleChip(this)">🇰🇷 한국어 힌트</button>
+      <button class="btn-ghost" style="font-size:10px;padding:4px 10px;margin-left:auto" onclick="resetVchat()">대화 초기화</button>
+    </div>
+    <div class="vchat-window" id="vchat-window"></div>
+    <div class="vchat-controls">
+      <button class="mic-big" id="vchat-mic" onclick="toggleVchatMic()">🎤</button>
+      <div style="flex:1">
+        <div class="mic-status" id="vchat-mic-status">마이크 버튼을 눌러 말하기</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">또는 텍스트로도 입력 가능</div>
+      </div>
+      <button id="tts-stop-btn" onclick="window.speechSynthesis.cancel();_showTtsStop(false)" style="display:none;background:var(--red);color:white;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;animation:pulse 1s infinite">⏹ 정지</button>
+    </div>
+    <div class="chat-input-row mt-8">
+      <input class="text-input" id="vchat-input" type="text" placeholder="텍스트로 입력..." onkeydown="if(event.key==='Enter')sendVchat(false)" />
+      <button class="btn-primary" onclick="sendVchat(false)">전송</button>
+    </div>
+  </div>
+
+  <!-- 성조 훈련 -->
+  <div class="voice-section" id="vs-tone">
+    <div class="sec-label">4성조 집중 훈련</div>
+    <div class="tone-practice-grid">
+      <div class="tone-prac-card">
+        <div class="tone-prac-char" style="color:var(--indigo)">mā / má / mǎ / mà</div>
+        <div class="tone-prac-py" style="color:var(--indigo)">妈 / 麻 / 马 / 骂</div>
+        <div class="tone-prac-desc">같은 발음, 다른 뜻 — 성조가 의미를 바꿔요!</div>
+        <button class="btn-tts" onclick="speakFourTones()">🔊 4성조 연속 듣기</button>
+      </div>
+      <div class="tone-prac-card">
+        <div class="tone-prac-char" style="color:var(--teal)">你好 → ní hǎo</div>
+        <div class="tone-prac-py" style="color:var(--teal)">3성 + 3성 변조</div>
+        <div class="tone-prac-desc">3성이 연속되면 앞이 2성으로 변해요</div>
+        <button class="btn-tts" onclick="speakChinese('你好，你好，你好')">🔊 변조 확인</button>
+      </div>
+    </div>
+    <div class="sec-label">성조별 연습 단어</div>
+    <div id="tone-drill-list" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</section>
+
+<!-- ═══ TSC ═══ -->
+<section id="panel-tsc" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">TSC 시험 대비</div><div class="page-desc">Test of Spoken Chinese — 말하기 능력 시험 종합 대비</div></div>
+    <span class="tag tag-tsc">TSC 1–5급</span>
+  </div>
+  <div class="tsc-hero">
+    <h2>TSC란?</h2>
+    <p>TSC(Test of Spoken Chinese)는 중국어 말하기 능력을 평가하는 공인 시험이에요.<br>
+    1급(기초) ~ 5급(고급)까지, 그림 묘사·상황 말하기·의견 제시 등 다양한 유형으로 구성돼요.</p>
+  </div>
+  <div class="sec-label">TSC 급수 선택</div>
+  <div class="tsc-levels-grid">
+    <div class="tsc-lv-card lv1 selected" id="tsc-lv-1" onclick="selectTSCLevel(1)">
+      <div class="tsc-lv-title">TSC 1급</div>
+      <div class="tsc-lv-sub">기초 인사, 간단한 자기소개, 일상 사물 묘사</div>
+    </div>
+    <div class="tsc-lv-card lv2" id="tsc-lv-2" onclick="selectTSCLevel(2)">
+      <div class="tsc-lv-title">TSC 2급</div>
+      <div class="tsc-lv-sub">일상 대화, 그림 묘사, 간단한 이유 설명</div>
+    </div>
+    <div class="tsc-lv-card lv3" id="tsc-lv-3" onclick="selectTSCLevel(3)">
+      <div class="tsc-lv-title">TSC 3급</div>
+      <div class="tsc-lv-sub">상황 설명, 경험 이야기, 의견 제시</div>
+    </div>
+    <div class="tsc-lv-card lv4" id="tsc-lv-4" onclick="selectTSCLevel(4)">
+      <div class="tsc-lv-title">TSC 4급</div>
+      <div class="tsc-lv-sub">주제 토론, 논리적 발표, 사회 문제 의견</div>
+    </div>
+    <div class="tsc-lv-card lv5" id="tsc-lv-5" onclick="selectTSCLevel(5)">
+      <div class="tsc-lv-title">TSC 5급</div>
+      <div class="tsc-lv-sub">심화 토론, 비교 분석, 복잡한 주제 발표</div>
+    </div>
+    <div class="tsc-lv-card" style="background:var(--bg3);border-color:var(--border);cursor:pointer" onclick="selectTSCLevel('mock')">
+      <div class="tsc-lv-title" style="color:var(--text)">모의고사</div>
+      <div class="tsc-lv-sub">전급 통합 실전 모의 시험</div>
+    </div>
+  </div>
+  <div class="tsc-tabs">
+    <button class="tsc-tab active" onclick="switchTSCTab('speak',this)">🎙️ 말하기 연습</button>
+    <button class="tsc-tab" onclick="switchTSCTab('vocab',this)">📖 TSC 어휘</button>
+    <button class="tsc-tab" onclick="switchTSCTab('grammar',this)">📐 TSC 문법</button>
+    <button class="tsc-tab" onclick="switchTSCTab('quiz',this)">✏️ 연습 문제</button>
+  </div>
+  <div class="tsc-section show" id="tsc-speak">
+    <div class="tsc-speak-card">
+      <div class="tsc-prompt" id="tsc-prompt-text">다음 주제에 대해 30초 동안 중국어로 말해보세요</div>
+      <div class="tsc-topic" id="tsc-topic-cn">你的家庭</div>
+      <div class="tsc-topic-ko" id="tsc-topic-ko">당신의 가족에 대해 말해보세요</div>
+      <div class="tsc-timer" id="tsc-timer">00:30</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-tts" onclick="speakChinese(document.getElementById('tsc-topic-cn').textContent)">🔊 주제 듣기</button>
+        <button class="btn-mic" id="tsc-mic-btn" onclick="toggleTSCMic()">🎤 녹음 시작</button>
+        <button class="btn-ghost" onclick="nextTSCTopic()">다음 주제 →</button>
+        <button class="btn-ghost" onclick="showTSCSample()">💡 예시 답변 보기</button>
+      </div>
+    </div>
+    <div class="tsc-sample" id="tsc-sample-box">
+      <div style="font-size:11px;color:var(--tsc);font-family:'DM Mono',monospace;margin-bottom:8px">예시 답변</div>
+      <div class="tsc-sample-cn" id="tsc-sample-cn"></div>
+      <div class="tsc-sample-ko" id="tsc-sample-ko"></div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn-tts" onclick="speakChinese(document.getElementById('tsc-sample-cn').textContent, 0.85)">🔊 예시 답변 듣기</button>
+      </div>
+    </div>
+    <div class="tsc-scoring" id="tsc-scoring" style="display:none">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">발음 평가 항목</div>
+      <div class="tsc-score-row"><div class="tsc-score-label">성조 정확도</div><div class="tsc-score-bar"><div class="tsc-score-fill" id="sc-tone" style="width:0%"></div></div><div class="tsc-score-val" id="sv-tone">0%</div></div>
+      <div class="tsc-score-row"><div class="tsc-score-label">유창성</div><div class="tsc-score-bar"><div class="tsc-score-fill" id="sc-fluency" style="width:0%"></div></div><div class="tsc-score-val" id="sv-fluency">0%</div></div>
+      <div class="tsc-score-row"><div class="tsc-score-label">내용 완성</div><div class="tsc-score-bar"><div class="tsc-score-fill" id="sc-content" style="width:0%"></div></div><div class="tsc-score-val" id="sv-content">0%</div></div>
+    </div>
+  </div>
+  <div class="tsc-section" id="tsc-vocab"><div id="tsc-vocab-list"></div></div>
+  <div class="tsc-section" id="tsc-grammar"><div id="tsc-grammar-content"></div></div>
+  <div class="tsc-section" id="tsc-quiz"><div id="tsc-quiz-area"></div></div>
+</section>
+
+<!-- ═══ CULTURE ═══ -->
+<section id="panel-culture" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">문화 몰입</div><div class="page-desc">HSK 단계별 주제 어휘를 학습하고 퀴즈로 확인해요</div></div>
+  </div>
+  <div class="hsk-filter">
+    <button class="hsk-filter-btn active-hsk3" id="cf-hsk3" onclick="filterCult(3,this)">HSK 3급</button>
+    <button class="hsk-filter-btn" id="cf-hsk4" onclick="filterCult(4,this)">HSK 4급</button>
+    <button class="hsk-filter-btn" id="cf-hsk5" onclick="filterCult(5,this)">HSK 5급</button>
+  </div>
+  <div class="sec-label">주제 선택</div>
+  <div class="hsk-topic-grid" id="cult-topic-grid"></div>
+  <div class="sec-label">핵심 어휘</div>
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px">
+    <div class="word-list" id="cult-words"></div>
+  </div>
+  <div class="sec-label">이해도 퀴즈</div>
+  <div id="cult-quiz-area"></div>
+</section>
+
+<!-- ═══ FLASHCARD ═══ -->
+<section id="panel-flashcard" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">메모리 카드</div><div class="page-desc">SRS 방식으로 HSK 단계별 단어를 효율적으로 암기해요</div></div>
+    <span class="tag tag-teal">SRS</span>
+  </div>
+  <div class="fc-hsk-select">
+    <button class="fc-hsk-btn active-hsk3" onclick="selectFCLevel(3,this)">HSK 3</button>
+    <button class="fc-hsk-btn" onclick="selectFCLevel(4,this)">HSK 4</button>
+    <button class="fc-hsk-btn" onclick="selectFCLevel(5,this)">HSK 5</button>
+    <button class="fc-hsk-btn" onclick="selectFCLevel('tsc',this)">TSC</button>
+    <button class="fc-hsk-btn" onclick="selectFCLevel(0,this)">전체</button>
+  </div>
+  <div class="fc-header-row">
+    <div class="fc-counter" id="fc-counter">1 / 20</div>
+    <div class="prog-bar"><div class="prog-fill" id="fc-prog" style="width:5%"></div></div>
+    <button class="btn-ghost" onclick="resetFC(false)">처음으로</button>
+  </div>
+  <div class="flashcard-wrap" id="flashcard" onclick="flipFC()">
+    <div class="flashcard-inner">
+      <div class="fc-face fc-front">
+        <div class="fc-cn" id="fc-cn">学习</div>
+        <div class="fc-level-tag" id="fc-lv-tag" style="background:var(--hsk3-dim);color:var(--hsk3)">HSK 3</div>
+        <div class="fc-hint">클릭해서 뒤집기 ↺</div>
+      </div>
+      <div class="fc-face fc-back">
+        <div style="display:flex;gap:8px;margin-bottom:6px;justify-content:center">
+          <button class="btn-tts" style="font-size:10px;padding:4px 10px" onclick="event.stopPropagation();speakChinese(document.getElementById('fc-cn').textContent)">🔊 듣기</button>
+        </div>
+        <div class="fc-pinyin" id="fc-pinyin">xué xí</div>
+        <div class="fc-meaning" id="fc-meaning">공부하다</div>
+        <div class="fc-example" id="fc-example">我每天学习中文。</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-rating" id="fc-rating" style="display:none">
+    <button class="fc-btn fc-btn-hard" onclick="rateFC(0)">😣 어려워요</button>
+    <button class="fc-btn fc-btn-ok" onclick="rateFC(1)">😐 보통이에요</button>
+    <button class="fc-btn fc-btn-easy" onclick="rateFC(2)">😊 쉬워요</button>
+  </div>
+  <hr class="divider">
+  <div class="sec-label">학습 통계</div>
+  <div class="fc-stats">
+    <div class="fc-stat"><div class="fc-stat-num" id="fc-hard">0</div><div class="fc-stat-label">어려워요</div></div>
+    <div class="fc-stat"><div class="fc-stat-num" id="fc-ok">0</div><div class="fc-stat-label">보통이에요</div></div>
+    <div class="fc-stat"><div class="fc-stat-num" id="fc-easy">0</div><div class="fc-stat-label">쉬워요</div></div>
+  </div>
+</section>
+
+<!-- ═══ GRAMMAR ═══ -->
+<section id="panel-grammar" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">문법 간소화기</div><div class="page-desc">HSK 3→5급 핵심 문법을 비유와 예시로 쉽게 배워요</div></div>
+  </div>
+  <div class="grammar-level-tabs">
+    <button class="g-lv-tab active-hsk3" onclick="switchGrammarLevel(3,this)">HSK 3급</button>
+    <button class="g-lv-tab" onclick="switchGrammarLevel(4,this)">HSK 4급</button>
+    <button class="g-lv-tab" onclick="switchGrammarLevel(5,this)">HSK 5급</button>
+  </div>
+  <div class="grammar-group show" id="gg-3">
+    <div class="grammar-tabs">
+      <button class="g-tab active" onclick="showGG(this,'g3-shi','gg-3')">是구문</button>
+      <button class="g-tab" onclick="showGG(this,'g3-you','gg-3')">有구문</button>
+      <button class="g-tab" onclick="showGG(this,'g3-zai','gg-3')">在구문</button>
+      <button class="g-tab" onclick="showGG(this,'g3-bi','gg-3')">比较문</button>
+      <button class="g-tab" onclick="showGG(this,'g3-guo','gg-3')">过 경험</button>
+    </div>
+    <div class="grammar-card hsk3-card show" id="g3-shi"><div class="pattern-box p3">주어 + 是 + 명사/신분</div><div class="g-metaphor">🏷️ <strong>"是"는 이름표!</strong> 주어의 정체를 밝혀주는 가장 기본 구조. A는 B다.</div><div class="example-row"><div class="ex-cn">我是学生。</div><div class="ex-pinyin">Wǒ shì xuésheng.</div><div class="ex-ko">나는 학생이다.</div></div><div class="example-row"><div class="ex-cn">这是我的书。</div><div class="ex-pinyin">Zhè shì wǒ de shū.</div><div class="ex-ko">이것은 나의 책이다.</div></div></div>
+    <div class="grammar-card hsk3-card" id="g3-you"><div class="pattern-box p3">주어 + 有 + 사물</div><div class="g-metaphor">🎒 <strong>"有"는 가방!</strong> 소유나 존재를 나타내요. 부정은 반드시 没有!</div><div class="example-row"><div class="ex-cn">我有一本书。</div><div class="ex-pinyin">Wǒ yǒu yī běn shū.</div><div class="ex-ko">나는 책이 한 권 있다.</div></div><div class="example-row"><div class="ex-cn">我没有钱。</div><div class="ex-pinyin">Wǒ méi yǒu qián.</div><div class="ex-ko">나는 돈이 없다.</div></div></div>
+    <div class="grammar-card hsk3-card" id="g3-zai"><div class="pattern-box p3">주어 + 在 + 장소</div><div class="g-metaphor">📍 <strong>"在"는 GPS 핀!</strong> 위치를 나타내요. 有와 달리 "어디 있다"에 초점.</div><div class="example-row"><div class="ex-cn">我在图书馆。</div><div class="ex-pinyin">Wǒ zài túshūguǎn.</div><div class="ex-ko">나는 도서관에 있다.</div></div><div class="example-row"><div class="ex-cn">书在桌子上。</div><div class="ex-pinyin">Shū zài zhuōzi shàng.</div><div class="ex-ko">책은 탁자 위에 있다.</div></div></div>
+    <div class="grammar-card hsk3-card" id="g3-bi"><div class="pattern-box p3">A + 比 + B + 형용사</div><div class="g-metaphor">⚖️ <strong>"比"는 시소!</strong> A가 B보다 ~하다. 차이를 나타낼 때 뒤에 수량 추가.</div><div class="example-row"><div class="ex-cn">他比我高两厘米。</div><div class="ex-pinyin">Tā bǐ wǒ gāo liǎng límǐ.</div><div class="ex-ko">그는 나보다 2cm 크다.</div></div><div class="example-row"><div class="ex-cn">苹果比香蕉贵。</div><div class="ex-pinyin">Píngguǒ bǐ xiāngjiāo guì.</div><div class="ex-ko">사과가 바나나보다 비싸다.</div></div></div>
+    <div class="grammar-card hsk3-card" id="g3-guo"><div class="pattern-box p3">주어 + 동사 + 过 + 목적어</div><div class="g-metaphor">✈️ <strong>"过"는 여행 스탬프!</strong> "해본 적 있다"는 경험. 부정은 没+동사+过.</div><div class="example-row"><div class="ex-cn">我去过北京。</div><div class="ex-pinyin">Wǒ qù guò Běijīng.</div><div class="ex-ko">나는 베이징에 가본 적 있다.</div></div><div class="example-row"><div class="ex-cn">我没学过日语。</div><div class="ex-pinyin">Wǒ méi xué guò Rìyǔ.</div><div class="ex-ko">나는 일본어를 배워본 적 없다.</div></div></div>
+  </div>
+  <div class="grammar-group" id="gg-4">
+    <div class="grammar-tabs">
+      <button class="g-tab active" onclick="showGG(this,'g4-ba','gg-4')">把구문</button>
+      <button class="g-tab" onclick="showGG(this,'g4-bei','gg-4')">被구문</button>
+      <button class="g-tab" onclick="showGG(this,'g4-shide','gg-4')">是…的</button>
+      <button class="g-tab" onclick="showGG(this,'g4-jia','gg-4')">如果…就</button>
+    </div>
+    <div class="grammar-card hsk4-card show" id="g4-ba"><div class="pattern-box p4">주어+把+목적어+동사+결과</div><div class="g-metaphor">🤲 <strong>"把"로 목적어를 앞으로!</strong> 처리한 결과를 강조하는 구문.</div><div class="example-row"><div class="ex-cn">他把作业做完了。</div><div class="ex-pinyin">Tā bǎ zuòyè zuò wán le.</div><div class="ex-ko">그는 숙제를 다 끝냈다.</div></div><div class="example-row"><div class="ex-cn">我把手机忘在家里了。</div><div class="ex-pinyin">Wǒ bǎ shǒujī wàng zài jiā lǐ le.</div><div class="ex-ko">나는 핸드폰을 집에 두고 왔다.</div></div></div>
+    <div class="grammar-card hsk4-card" id="g4-bei"><div class="pattern-box p4">주어(당하는 이)+被+행위자+동사</div><div class="g-metaphor">🎯 <strong>"被"는 수동태!</strong> 주어가 행동을 받는 쪽. ~당했다.</div><div class="example-row"><div class="ex-cn">蛋糕被他吃掉了。</div><div class="ex-pinyin">Dàngāo bèi tā chī diào le.</div><div class="ex-ko">케이크가 그에게 먹혔다.</div></div><div class="example-row"><div class="ex-cn">我的自行车被偷了。</div><div class="ex-pinyin">Wǒ de zìxíngchē bèi tōu le.</div><div class="ex-ko">내 자전거가 도둑맞았다.</div></div></div>
+    <div class="grammar-card hsk4-card" id="g4-shide"><div class="pattern-box p4">是+[시간/장소/방법]+동사+的</div><div class="g-metaphor">🔦 <strong>"是…的"는 손전등!</strong> 이미 일어난 일에서 언제/어디서/어떻게를 강조.</div><div class="example-row"><div class="ex-cn">他是昨天来的。</div><div class="ex-pinyin">Tā shì zuótiān lái de.</div><div class="ex-ko">그는 어제 온 거야.</div></div><div class="example-row"><div class="ex-cn">我是坐地铁来的。</div><div class="ex-pinyin">Wǒ shì zuò dìtiě lái de.</div><div class="ex-ko">나는 지하철 타고 온 거야.</div></div></div>
+    <div class="grammar-card hsk4-card" id="g4-jia"><div class="pattern-box p4">如果+조건, 就+결과</div><div class="g-metaphor">🔑 <strong>"如果…就"는 열쇠와 문!</strong> "만약 ~하면, ~한다"는 가정문.</div><div class="example-row"><div class="ex-cn">如果明天下雨，我就不去了。</div><div class="ex-pinyin">Rúguǒ míngtiān xià yǔ, wǒ jiù bú qù le.</div><div class="ex-ko">내일 비 오면 안 갈 거야.</div></div></div>
+  </div>
+  <div class="grammar-group" id="gg-5">
+    <div class="grammar-tabs">
+      <button class="g-tab active" onclick="showGG(this,'g5-lian','gg-5')">连…都/也</button>
+      <button class="g-tab" onclick="showGG(this,'g5-de','gg-5')">程度补语</button>
+      <button class="g-tab" onclick="showGG(this,'g5-sui','gg-5')">虽然…但是</button>
+    </div>
+    <div class="grammar-card hsk5-card show" id="g5-lian"><div class="pattern-box p5">连+[극단 예시]+都/也+동사</div><div class="g-metaphor">🎚️ <strong>"连…都/也"는 볼륨 최대!</strong> "심지어 ~조차도" 극단적 강조.</div><div class="example-row"><div class="ex-cn">他连名字都不记得了。</div><div class="ex-pinyin">Tā lián míngzì dōu bú jìde le.</div><div class="ex-ko">그는 이름조차 기억 못해.</div></div></div>
+    <div class="grammar-card hsk5-card" id="g5-de"><div class="pattern-box p5">동사/형용사+得+정도보어</div><div class="g-metaphor">📏 <strong>"得"는 눈금 자!</strong> 동작이나 상태가 얼마나인지 정도를 표현.</div><div class="example-row"><div class="ex-cn">她唱得很好听。</div><div class="ex-pinyin">Tā chàng de hěn hǎotīng.</div><div class="ex-ko">그녀는 노래를 정말 잘 불러.</div></div></div>
+    <div class="grammar-card hsk5-card" id="g5-sui"><div class="pattern-box p5">虽然+양보, 但是+결과</div><div class="g-metaphor">🌤️ <strong>"虽然…但是"는 반전 접속사!</strong> 비록 ~하지만, ~하다.</div><div class="example-row"><div class="ex-cn">虽然很难，但是很有趣。</div><div class="ex-pinyin">Suīrán hěn nán, dànshì hěn yǒuqù.</div><div class="ex-ko">비록 어렵지만 재미있어.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══ PRONUNCIATION ═══ -->
+<section id="panel-pronunciation" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">발음 트레이너</div><div class="page-desc">4성조 마스터와 자연스러운 중국어 발음을 익혀요</div></div>
+    <span class="tag tag-gold">4성조</span>
+  </div>
+  <div class="sec-label">4성조 시각화 (클릭해서 들어보기)</div>
+  <div class="tone-grid">
+    <div class="tone-card t1" onclick="speakChinese('妈妈妈妈', 0.7)"><div class="tone-num">1성 (阴平)</div><div class="tone-char">妈 mā</div><div class="tone-curve">— —</div><div class="tone-mark">ā</div><div class="tone-desc">높고 평탄<br>노래 '미' 음정</div></div>
+    <div class="tone-card t2" onclick="speakChinese('麻烦麻烦', 0.7)"><div class="tone-num">2성 (阳平)</div><div class="tone-char">麻 má</div><div class="tone-curve">↗</div><div class="tone-mark">á</div><div class="tone-desc">올려서<br>"응?" 하듯</div></div>
+    <div class="tone-card t3" onclick="speakChinese('马马虎虎', 0.7)"><div class="tone-num">3성 (上声)</div><div class="tone-char">马 mǎ</div><div class="tone-curve">↘↗</div><div class="tone-mark">ǎ</div><div class="tone-desc">내렸다 올려<br>"아~" 하듯</div></div>
+    <div class="tone-card t4" onclick="speakChinese('骂人骂人', 0.7)"><div class="tone-num">4성 (去声)</div><div class="tone-char">骂 mà</div><div class="tone-curve">↘</div><div class="tone-mark">à</div><div class="tone-desc">강하게 내려가<br>"아!" 감탄</div></div>
+  </div>
+  <div class="sec-label">발음 팁</div>
+  <div class="tip-list">
+    <div class="tip-item"><div class="tip-num">01</div><div class="tip-text"><strong>3성 연속 변조:</strong> 你好(nǐ hǎo) → 실제로는 ní hǎo! 3성+3성 → 앞이 2성으로.</div></div>
+    <div class="tip-item"><div class="tip-num">02</div><div class="tip-text"><strong>경성(轻声):</strong> 吧·呢·了 등 어기조사는 성조 없이 가볍게 빠르게.</div></div>
+    <div class="tip-item"><div class="tip-num">03</div><div class="tip-text"><strong>一 변조:</strong> 4성 앞→2성(yí), 1·2·3성 앞→4성(yì). 一个(yí gè)</div></div>
+    <div class="tip-item"><div class="tip-num">04</div><div class="tip-text"><strong>不 변조:</strong> 4성 앞에서 2성으로. 不对(búduì), 不是(búshì)</div></div>
+    <div class="tip-item"><div class="tip-num">05</div><div class="tip-text"><strong>리듬감:</strong> 강조 단어를 살짝 길게 → 자연스러운 억양!</div></div>
+  </div>
+  <div class="mt-12">
+    <div class="sec-label">구절 분석 &amp; TTS</div>
+    <div class="input-row">
+      <input class="text-input" id="pinyin-input" type="text" placeholder="중국어 입력 후 분석 또는 TTS 듣기" />
+      <button class="btn-tts" onclick="speakChinese(document.getElementById('pinyin-input').value)">🔊 듣기</button>
+      <button class="btn-primary" onclick="analyzePinyin()">분석</button>
+    </div>
+    <div class="analysis-result" id="analysis-result"></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+/* ══ TTS ══ */
+let _ttsVoices = [];
+let _ttsReady = false;
+
+function _loadVoices() {
+  const v = window.speechSynthesis.getVoices();
+  if (v.length > 0) { _ttsVoices = v; _ttsReady = true; }
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = _loadVoices;
+  _loadVoices();
+}
+
+function speakChinese(text, rate) {
+  if (!text || !text.trim()) return;
+  if (!window.speechSynthesis) { showToast('⚠️ 이 브라우저는 TTS를 지원하지 않아요. Chrome을 사용해주세요.', 'warn'); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.trim());
+  u.lang = 'zh-CN';
+  u.rate = rate || 1.0;
+  u.pitch = 1.0;
+  if (_ttsVoices.length === 0) _loadVoices();
+  const zhVoice = _ttsVoices.find(v => v.lang === 'zh-CN') || _ttsVoices.find(v => v.lang === 'zh-TW') || _ttsVoices.find(v => v.lang.startsWith('zh'));
+  if (zhVoice) u.voice = zhVoice;
+  u.onerror = (e) => { if (e.error !== 'interrupted') showToast('🔇 TTS 오류: ' + e.error); };
+  u.onstart = () => _showTtsStop(true);
+  u.onend = () => _showTtsStop(false);
+  window.speechSynthesis.speak(u);
+}
+function _showTtsStop(show) {
+  const btn = document.getElementById('tts-stop-btn');
+  if (btn) btn.style.display = show ? 'inline-block' : 'none';
+}
+
+function showToast(msg, type) {
+  const old = document.getElementById('toast-msg');
+  if (old) old.remove();
+  const d = document.createElement('div');
+  d.id = 'toast-msg';
+  const bg = type === 'warn' ? '#d4a844' : type === 'err' ? '#e05c4a' : '#4ab8a0';
+  d.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:' + bg + ';color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-family:Noto Sans KR,sans-serif;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);transition:opacity 0.3s;max-width:90vw;text-align:center';
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(() => { d.style.opacity = '0'; setTimeout(() => d.remove(), 300); }, 3500);
+}
+
+let _currentLessonWords = [];
+function speakCurrentLessonWords() { speakAllWords(_currentLessonWords); }
+
+function speakToneDrillRow(rowIdx) {
+  const data = [['书','家','飞'],['来','人','学'],['你','好','水'],['是','在','去']];
+  if (data[rowIdx]) speakAllWords(data[rowIdx]);
+}
+
+function speakFourTones() {
+  const words = ['妈', '麻', '马', '骂'];
+  let i = 0;
+  function next() {
+    if (i >= words.length) return;
+    const u = new SpeechSynthesisUtterance(words[i]);
+    u.lang = 'zh-CN'; u.rate = 0.7;
+    u.onend = () => { i++; setTimeout(next, 500); };
+    window.speechSynthesis.speak(u);
+  }
+  window.speechSynthesis.cancel();
+  next();
+}
+
+function speakAllWords(words) {
+  let i = 0;
+  function next() {
+    if (i >= words.length) return;
+    const u = new SpeechSynthesisUtterance(words[i]);
+    u.lang = 'zh-CN'; u.rate = 0.85;
+    u.onend = () => { i++; setTimeout(next, 700); };
+    window.speechSynthesis.speak(u);
+  }
+  window.speechSynthesis.cancel(); next();
+}
+
+function speakListenItem(idx) {
+  const data = listenData[ltLevel] || listenData[3];
+  if (data && data[idx]) speakChinese(data[idx].cn);
+}
+
+function speakShadow(idx, rate) {
+  if (shadowData && shadowData[idx]) speakChinese(shadowData[idx].cn, rate);
+}
+
+function speakLastVchat(btn) {
+  const bubble = btn.closest('.bubble-ai');
+  if (bubble) {
+    const cn = bubble.childNodes[0] && bubble.childNodes[0].textContent;
+    if (cn) speakChinese(cn.trim());
+  }
+}
+
+function speakTSCEx(btn) {
+  const card = btn.closest('.tsc-grammar-card');
+  if (card) {
+    const exCn = card.querySelector('.tsc-ex-cn');
+    if (exCn) speakChinese(exCn.textContent, 0.85);
+  }
+}
+
+/* ══ STT ══ */
+function initRecognition(cb) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('⚠️ 음성 인식은 Chrome에서만 지원돼요.', 'warn'); return null; }
+  const r = new SR();
+  r.lang = 'zh-CN';
+  r.continuous = false;
+  r.interimResults = true;
+  r.maxAlternatives = 1;
+  r.onresult = e => {
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+    }
+    if (final && cb) cb(final);
+  };
+  r.onerror = e => {
+    const msgs = {
+      'not-allowed': '마이크 권한이 거부됐어요. 주소창 자물쇠 → 마이크 허용을 눌러주세요.',
+      'no-speech': '음성이 감지되지 않았어요. 마이크에 더 가까이 말해보세요.',
+      'network': '네트워크 오류예요. 인터넷 연결을 확인해주세요.',
+      'audio-capture': '마이크를 찾을 수 없어요. 마이크 연결을 확인해주세요.',
+      'aborted': ''
+    };
+    const m = msgs[e.error];
+    if (m) showToast('🎤 ' + m, 'warn');
+  };
+  r.onend = () => {
+    document.querySelectorAll('.btn-mic.recording').forEach(b => { b.classList.remove('recording'); if (b.dataset.resetText) b.textContent = b.dataset.resetText; });
+    document.querySelectorAll('.mic-big.recording').forEach(b => b.classList.remove('recording'));
+  };
+  return r;
+}
+
+/* ══ 마이크 권한 ══ */
+let _micPermissionGranted = false;
+async function requestMicPermission() {
+  // navigator.permissions 지원 시 조용히 상태 확인
+  if (navigator.permissions) {
+    try {
+      const result = await navigator.permissions.query({ name: 'microphone' });
+      if (result.state === 'granted') { _micPermissionGranted = true; return true; }
+      if (result.state === 'denied') {
+        showToast('⚠️ 마이크 권한이 차단됐어요. 주소창 자물쇠 → 마이크 허용을 눌러주세요.', 'warn');
+        return false;
+      }
+    } catch(e) {}
+  }
+  if (_micPermissionGranted) return true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t => t.stop());
+    _micPermissionGranted = true;
+    showToast('✅ 마이크 권한 허용됐어요!', 'ok');
+    return true;
+  } catch (e) {
+    showToast('⚠️ 마이크 권한을 허용해주세요. 브라우저 주소창 자물쇠 아이콘을 클릭하세요.', 'warn');
+    return false;
+  }
+}
+
+/* ══ NAVIGATION ══ */
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  const navItem = el.closest ? el.closest('.nav-item') : el;
+  if (navItem) navItem.classList.add('active');
+}
+
+/* ══ ROADMAP ══ */
+const roadmapData = {
+  3: [
+    {d:1,t:'是/有/在 구문',i:'📌',done:true},{d:2,t:'比교문',i:'⚖️',done:true},{d:3,t:'过 경험',i:'✈️',done:true},
+    {d:4,t:'방향 보어',i:'➡️',done:false},{d:5,t:'시량 보어',i:'⏱',done:false},{d:6,t:'1주 복습',i:'🔄',done:false},
+    {d:7,t:'감정 어휘',i:'❤️',done:false},{d:8,t:'날씨·계절',i:'🌤️',done:false},{d:9,t:'음식·식당',i:'🍜',done:false},
+    {d:10,t:'쇼핑·가격',i:'🛍️',done:false},{d:11,t:'교통·이동',i:'🚇',done:false},{d:12,t:'2주 복습',i:'🔄',done:false},
+    {d:13,t:'학교·공부',i:'📚',done:false},{d:14,t:'직업·일',i:'💼',done:false},{d:15,t:'신체·건강',i:'💪',done:false},
+    {d:16,t:'가족·관계',i:'👨‍👩‍👧',done:false},{d:17,t:'시간·날짜',i:'📅',done:false},{d:18,t:'3주 복습',i:'🔄',done:false},
+    {d:19,t:'취미·여가',i:'🎮',done:false},{d:20,t:'여행·숙박',i:'🏨',done:false},{d:21,t:'전화·인터넷',i:'📱',done:false},
+    {d:22,t:'은행·우체국',i:'🏦',done:false},{d:23,t:'종합 복습',i:'📖',done:false},{d:24,t:'HSK3 테스트',i:'🏆',done:false},
+  ],
+  4: [{d:25,t:'把 구문',i:'🤲',done:false},{d:26,t:'被 구문',i:'🎯',done:false},{d:27,t:'是…的',i:'🔦',done:false},{d:28,t:'如果…就',i:'🔑',done:false},{d:29,t:'감정 심화',i:'💭',done:false},{d:30,t:'1주 복습',i:'🔄',done:false},{d:31,t:'사회·문화',i:'🏙️',done:false},{d:32,t:'경제·직업',i:'💼',done:false},{d:33,t:'의견 표현',i:'🗣️',done:false},{d:34,t:'이유 표현',i:'❓',done:false},{d:35,t:'정도 표현',i:'📊',done:false},{d:36,t:'2주 복습',i:'🔄',done:false},{d:37,t:'요청·허가',i:'🙏',done:false},{d:38,t:'비교·대조',i:'↔️',done:false},{d:39,t:'변화·결과',i:'🔄',done:false},{d:40,t:'수량 보어',i:'🔢',done:false},{d:41,t:'겸어문',i:'🎭',done:false},{d:42,t:'3주 복습',i:'🔄',done:false},{d:43,t:'자연·환경',i:'🌿',done:false},{d:44,t:'뉴스·미디어',i:'📰',done:false},{d:45,t:'기술·과학',i:'🔬',done:false},{d:46,t:'예술·문화',i:'🎨',done:false},{d:47,t:'종합 복습',i:'📖',done:false},{d:48,t:'HSK4 테스트',i:'🏆',done:false}],
+  5: [{d:49,t:'连…都/也',i:'🎚️',done:false},{d:50,t:'程度补语',i:'📏',done:false},{d:51,t:'虽然…但是',i:'🌤️',done:false},{d:52,t:'尽管…还是',i:'💪',done:false},{d:53,t:'복문 구조',i:'🔗',done:false},{d:54,t:'1주 복습',i:'🔄',done:false},{d:55,t:'정치·사회',i:'🏛️',done:false},{d:56,t:'역사·전통',i:'📜',done:false},{d:57,t:'철학·사상',i:'🤔',done:false},{d:58,t:'심리·행동',i:'🧠',done:false},{d:59,t:'논리 표현',i:'💡',done:false},{d:60,t:'2주 복습',i:'🔄',done:false},{d:61,t:'성어·관용구',i:'🎭',done:false},{d:62,t:'문어체',i:'📜',done:false},{d:63,t:'토론·설득',i:'🗣️',done:false},{d:64,t:'비판·분석',i:'🔍',done:false},{d:65,t:'언론·출판',i:'📰',done:false},{d:66,t:'3주 복습',i:'🔄',done:false},{d:67,t:'경제 심화',i:'📈',done:false},{d:68,t:'환경 심화',i:'♻️',done:false},{d:69,t:'과학 심화',i:'🔬',done:false},{d:70,t:'예술 심화',i:'🎨',done:false},{d:71,t:'종합 복습',i:'📖',done:false},{d:72,t:'HSK5 테스트',i:'🏆',done:false}],
+  tsc: [{d:73,t:'TSC 1급 기초',i:'🎙️',done:false},{d:74,t:'자기소개',i:'👤',done:false},{d:75,t:'사물 묘사',i:'🖼️',done:false},{d:76,t:'일상 대화',i:'☕',done:false},{d:77,t:'그림 묘사',i:'🖼️',done:false},{d:78,t:'1주 복습',i:'🔄',done:false},{d:79,t:'TSC 2급',i:'🎙️',done:false},{d:80,t:'경험 이야기',i:'📖',done:false},{d:81,t:'의견 제시',i:'💬',done:false},{d:82,t:'상황 설명',i:'🗺️',done:false},{d:83,t:'감정 표현',i:'❤️',done:false},{d:84,t:'2주 복습',i:'🔄',done:false},{d:85,t:'TSC 3급',i:'🎙️',done:false},{d:86,t:'주제 발표',i:'📢',done:false},{d:87,t:'사회 문제',i:'🏛️',done:false},{d:88,t:'비교 표현',i:'↔️',done:false},{d:89,t:'논리 발화',i:'💡',done:false},{d:90,t:'3주 복습',i:'🔄',done:false},{d:91,t:'TSC 4-5급',i:'🏅',done:false},{d:92,t:'토론 연습',i:'⚖️',done:false},{d:93,t:'심화 발표',i:'📊',done:false},{d:94,t:'모의고사 1',i:'📝',done:false},{d:95,t:'모의고사 2',i:'📝',done:false},{d:96,t:'TSC 최종',i:'🏆',done:false}]
+};
+
+let currentRMLevel = 3, currentRMWeek = 1;
+
+function selectRoadmapLevel(lv) {
+  currentRMLevel = lv; currentRMWeek = 1;
+  renderDayGrid();
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('current'));
+  const cls = lv === 'tsc' ? '.tsc' : '.hsk' + lv;
+  document.querySelector('.level-card' + cls) && document.querySelector('.level-card' + cls).classList.add('current');
+  const titles = {3:'HSK 3급 · 1주차 — 기본 문법 & 인사',4:'HSK 4급 · 1주차 — 把/被 구문',5:'HSK 5급 · 1주차 — 고급 구문',tsc:'TSC · 1주차 — 기초 말하기'};
+  document.getElementById('rm-week-title').textContent = titles[lv];
+}
+
+function changeWeek(d) { currentRMWeek = Math.max(1,Math.min(4,currentRMWeek+d)); document.getElementById('rm-week-label').textContent='Week '+currentRMWeek; renderDayGrid(); }
+
+function renderDayGrid() {
+  const days = roadmapData[currentRMLevel] || roadmapData[3];
+  const start = (currentRMWeek-1)*6, slice = days.slice(start,start+6);
+  const dow = ['월','화','수','목','금','토'];
+  document.getElementById('day-grid').innerHTML = slice.map((d,i) => {
+    const cls = d.done ? 'done' : (d.d<=3 && currentRMLevel===3 && currentRMWeek===1 ? (d.d===3?'active-day today':'done') : (d.d>3?'locked':''));
+    return '<div class="day-cell '+cls+'"><div class="day-num">'+dow[i]+'</div><div class="day-icon">'+(d.done?'✅':d.i)+'</div><div class="day-topic">'+d.t+'</div></div>';
+  }).join('') + '<div class="day-cell" style="opacity:0.35"><div class="day-num">일</div><div class="day-icon">😴</div><div class="day-topic">휴식</div></div>';
+}
+
+/* ══ LESSON DATA ══ */
+const lessonDB = {
+  3: [
+    { title:'是/有/在 구문', sub:'HSK 3급 Day 1',
+      words:[{cn:'学生',py:'xuésheng',ko:'학생',ex:'我是学生。'},{cn:'图书馆',py:'túshūguǎn',ko:'도서관',ex:'我在图书馆学习。'},{cn:'书',py:'shū',ko:'책',ex:'桌子上有一本书。'},{cn:'老师',py:'lǎoshī',ko:'선생님',ex:'她是老师。'},{cn:'朋友',py:'péngyou',ko:'친구',ex:'他是我的朋友。'}],
+      grammar:'是/有/在 구문', pattern:'주어 + 是/有/在 + 명사/장소',
+      note:'是(신분), 有(소유/존재), 在(위치) — 세 가지를 구분해서 써요!',
+      quiz:[
+        {type:'mc',q:'"我在图书馆"의 뜻은?',opts:['나는 도서관에 있다','나는 학생이다','나는 책이 있다','나는 선생님이다'],ans:0,exp:'在는 위치. 我在图书馆 = 나는 도서관에 있다.'},
+        {type:'mc',q:'"有"의 부정형은?',opts:['不有','没有','无有','否有'],ans:1,exp:'有의 부정은 반드시 没有(méi yǒu)!'},
+        {type:'mc',q:'빈칸: 桌子上____一本书。',opts:['是','在','有','和'],ans:2,exp:'탁자 위에 책이 있다 = 桌子上有书. 有는 존재 표현.'},
+        {type:'mc',q:'다음 중 맞는 문장은?',opts:['我不有书。','我在学生。','她是老师。','书没在桌子上。'],ans:2,exp:'她是老师. 是 뒤에 신분/역할이 오는 올바른 구문.'},
+        {type:'mc',q:'"他在哪里？"의 뜻은?',opts:['그는 어디에 있어요?','그는 누구예요?','그는 뭐 해요?','그는 어떻게 왔어요?'],ans:0,exp:'在哪里 = 어디에 있어요? 위치를 묻는 표현.'},
+        {type:'mc',q:'"我没有钱"의 뜻은?',opts:['나는 돈이 없다','나는 돈을 못 써','나는 돈이 있다','나는 돈을 원한다'],ans:0,exp:'没有 = 없다. 我没有钱 = 나는 돈이 없다.'},
+        {type:'fill',q:'빈칸 채우기: 我_____学生。(나는 학생이다)',ans:'是',exp:'是 = ~이다. 신분을 나타낼 때 是를 써요.'},
+        {type:'fill',q:'빈칸 채우기: 他_____在北京。(그는 베이징에 없다)',ans:'不',exp:'在의 부정은 不在. 他不在北京 = 그는 베이징에 없다.'},
+        {type:'fill',q:'빈칸 채우기: 桌子上_____一杯茶。(탁자 위에 차 한 잔이 있다)',ans:'有',exp:'有는 존재를 나타내요. 桌子上有一杯茶.'},
+        {type:'fill',q:'빈칸 채우기: 你_____哪里？(너는 어디 있어?)',ans:'在',exp:'在 + 장소. 你在哪里 = 너는 어디에 있어?'},
+      ], next:'비교문 (比)'
+    },
+    { title:'비교문 (比)', sub:'HSK 3급 Day 2',
+      words:[{cn:'高',py:'gāo',ko:'크다/높다',ex:'他比我高。'},{cn:'便宜',py:'piányí',ko:'싸다',ex:'这个比那个便宜。'},{cn:'快',py:'kuài',ko:'빠르다',ex:'他比我跑得快。'},{cn:'重要',py:'zhòngyào',ko:'중요하다',ex:'健康比金钱重要。'},{cn:'聪明',py:'cōngmíng',ko:'똑똑하다',ex:'她比妹妹聪明。'}],
+      grammar:'比교문', pattern:'A + 比 + B + 형용사',
+      note:'A比B+형용사 = A가 B보다 ~하다. 차이를 나타낼 때 형용사 뒤에 수량 추가!',
+      quiz:[
+        {type:'mc',q:'"他比我高两厘米"의 뜻은?',opts:['그는 나보다 2cm 크다','그는 나보다 2kg 무겁다','그는 나보다 2살 많다','그는 나보다 2배 빠르다'],ans:0,exp:'比 + 형용사 + 수량 = 차이 표현. 高两厘米 = 2cm 더 크다.'},
+        {type:'mc',q:'比교문에서 형용사 앞에 "很"을 쓰면?',opts:['강조된다','문법적으로 틀린다','부정이 된다','의문문이 된다'],ans:1,exp:'他比我很高 → 틀린 문장! 比 구문에서 형용사 앞에 很 금지.'},
+        {type:'mc',q:'"苹果比香蕉贵"의 뜻은?',opts:['사과가 바나나보다 비싸다','바나나가 사과보다 비싸다','사과와 바나나가 같은 값이다','사과가 바나나만큼 싸다'],ans:0,exp:'苹果比香蕉贵 = 사과가 바나나보다 비싸다.'},
+        {type:'mc',q:'"他跑得比我快"의 뜻은?',opts:['그는 나보다 빨리 달려','나는 그보다 빨리 달려','그와 나는 같은 속도','그는 빨리 못 달려'],ans:0,exp:'他跑得比我快 = 그는 나보다 빨리 달린다.'},
+        {type:'mc',q:'A와 B가 같다고 할 때 쓰는 구문은?',opts:['A比B','A没有B','A和B一样','A不如B'],ans:2,exp:'A和B一样 = A와 B는 같다. 比는 차이가 있을 때 사용.'},
+        {type:'mc',q:'다음 중 比 구문이 올바른 것은?',opts:['他比我很高。','今天比昨天冷。','他比我高很多地。','我比他在高。'],ans:1,exp:'今天比昨天冷 = 오늘이 어제보다 춥다. 올바른 比 구문.'},
+        {type:'fill',q:'빈칸: 今天_____昨天冷。(오늘은 어제보다 춥다)',ans:'比',exp:'比 = ~보다. A比B + 형용사.'},
+        {type:'fill',q:'빈칸: 他___我高五厘米。(그는 나보다 5cm 크다)',ans:'比',exp:'比 + 수량으로 차이를 나타내요.'},
+        {type:'fill',q:'빈칸: 她___我聪明。(그녀는 나보다 똑똑하다)',ans:'比',exp:'她比我聪明 = 그녀는 나보다 똑똑하다.'},
+        {type:'fill',q:'빈칸: 这个___那个贵。(이것이 저것보다 비싸다)',ans:'比',exp:'这个比那个贵 = 이것이 저것보다 비싸다.'},
+      ], next:'过 경험문'
+    },
+  ],
+  4: [
+    { title:'把 구문', sub:'HSK 4급',
+      words:[{cn:'完成',py:'wánchéng',ko:'완성하다',ex:'他把作业完成了。'},{cn:'整理',py:'zhěnglǐ',ko:'정리하다',ex:'请把房间整理一下。'},{cn:'忘记',py:'wàngjì',ko:'잊어버리다',ex:'我把他的名字忘记了。'},{cn:'放',py:'fàng',ko:'놓다/두다',ex:'把书放在桌子上。'},{cn:'关',py:'guān',ko:'닫다/끄다',ex:'请把门关上。'}],
+      grammar:'把 구문', pattern:'주어 + 把 + 목적어 + 동사 + 결과보어',
+      note:'把는 목적어를 동사 앞으로 끌어와 처리 결과를 강조해요.',
+      quiz:[
+        {type:'mc',q:'빈칸: 他____作业做完了。',opts:['把','被','让','叫'],ans:0,exp:'把 구문: 주어+把+목적어+동사+결과보어'},
+        {type:'mc',q:'다음 중 把 구문이 올바른 것은?',opts:['我把吃了。','他把书读完了。','她把很忙。','我们把在家。'],ans:1,exp:'他把书读完了 — 把 뒤에 명사, 동사 뒤에 결과보어.'},
+        {type:'mc',q:'"请把窗户打开"의 뜻은?',opts:['창문을 열어주세요','창문이 열렸어요','창문을 닫아주세요','창문이 부서졌어요'],ans:0,exp:'打开 = 열다. 请把窗户打开 = 창문을 열어주세요.'},
+        {type:'mc',q:'把 구문을 쓸 수 없는 경우는?',opts:['특정 대상을 처리할 때','결과가 있을 때','일반적 동작을 설명할 때','방향을 나타낼 때'],ans:2,exp:'把 구문은 특정 대상의 처리 결과를 나타내요. 일반적 동작에는 안 써요.'},
+        {type:'mc',q:'"我把手机忘在家里了"의 뜻은?',opts:['나는 핸드폰을 집에 두고 왔다','나는 핸드폰을 잃어버렸다','나는 핸드폰을 샀다','나는 핸드폰을 켰다'],ans:0,exp:'忘在…了 = ~에 두고 오다/잊고 오다.'},
+        {type:'mc',q:'把 뒤에 올 수 없는 것은?',opts:['특정 명사','대명사','불특정 명사','고유명사'],ans:2,exp:'把 뒤에는 특정한 대상(이미 알고 있는 것)이 와야 해요. 불특정 명사 불가.'},
+        {type:'fill',q:'빈칸: 请_____门关上。(문을 닫아주세요)',ans:'把',exp:'把 구문: 请把门关上 = 문을 닫아주세요.'},
+        {type:'fill',q:'빈칸: 他_____书放在桌子上了。(그는 책을 탁자 위에 놓았다)',ans:'把',exp:'他把书放在桌子上 = 그는 책을 탁자 위에 놓았다.'},
+        {type:'fill',q:'빈칸: 我_____这件事忘了。(나는 이 일을 잊었다)',ans:'把',exp:'把…忘了 = ~을 잊어버리다.'},
+        {type:'fill',q:'빈칸: 请_____作业交给老师。(숙제를 선생님께 제출해주세요)',ans:'把',exp:'把 구문으로 처리 대상과 결과를 표현.'},
+      ], next:'被 구문'
+    },
+  ],
+  5: [
+    { title:'连…都/也 강조', sub:'HSK 5급',
+      words:[{cn:'甚至',py:'shènzhì',ko:'심지어',ex:'他甚至连饭都不吃。'},{cn:'居然',py:'jūrán',ko:'뜻밖에도',ex:'他居然连名字都忘了。'},{cn:'根本',py:'gēnběn',ko:'전혀/아예',ex:'他根本不来。'},{cn:'毫无',py:'háowú',ko:'전혀 없다',ex:'他毫无根据。'},{cn:'极其',py:'jíqí',ko:'극히/매우',ex:'这件事极其重要。'}],
+      grammar:'连…都/也 강조', pattern:'连 + 극단 예시 + 都/也 + 동사',
+      note:'"连…都/也"는 "심지어 ~조차도"라는 극단적 강조 표현이에요.',
+      quiz:[
+        {type:'mc',q:'"连小孩子都知道"의 뜻은?',opts:['어린이도 알고 있다','어린이는 모른다','어린이만 알고 있다','어린이가 알아야 한다'],ans:0,exp:'连…都 = "~조차도". 连小孩子都知道 = 어린이조차도 알고 있다.'},
+        {type:'mc',q:'"连"과 함께 쓰는 조사는?',opts:['被','都/也','把','让'],ans:1,exp:'连…都 또는 连…也 형태로 사용해요.'},
+        {type:'mc',q:'"他连饭都不吃"가 강조하는 것은?',opts:['밥을 안 먹는다는 사실을 극단적으로 강조','밥의 종류','언제 밥을 먹는지','밥을 먹는 방법'],ans:0,exp:'连…都 = 가장 기본적인 것조차 안 한다는 극단적 강조.'},
+        {type:'mc',q:'"甚至"의 뜻은?',opts:['심지어','갑자기','물론','아마도'],ans:0,exp:'甚至(shènzhì) = 심지어. 정도가 심함을 강조할 때 사용.'},
+        {type:'mc',q:'다음 중 올바른 连…都 문장은?',opts:['他连都不知道。','连他都不知道这件事。','他知道连都。','连不知道他都。'],ans:1,exp:'连+강조 대상+都+동사. 连他都不知道这件事 = 그조차도 이 일을 모른다.'},
+        {type:'mc',q:'"根本"의 뜻으로 맞는 것은?',opts:['전혀, 아예','갑자기','다행히','마침내'],ans:0,exp:'根本(gēnběn) = 전혀, 아예. 부정문에서 강조할 때 사용.'},
+        {type:'fill',q:'빈칸: 连小孩子___会说。(어린이도 말할 수 있다)',ans:'都',exp:'连…都 구문. 连小孩子都会说.'},
+        {type:'fill',q:'빈칸: 他___连自己的名字都忘了。(그는 뜻밖에도 자기 이름조차 잊었다)',ans:'居然',exp:'居然 = 뜻밖에도. 예상 밖의 상황을 나타내요.'},
+        {type:'fill',q:'빈칸: 这件事___其重要。(이 일은 극히 중요하다)',ans:'极',exp:'极其 = 극히, 매우. 정도의 극단을 나타내요.'},
+        {type:'fill',q:'빈칸: 他根本___来。(그는 전혀 오지 않는다)',ans:'不',exp:'根本不 = 전혀 ~하지 않다.'},
+      ], next:'程度补语'
+    },
+  ],
+  tsc: [
+    { title:'TSC 기초 발화', sub:'TSC 준비 Day 1',
+      words:[{cn:'介绍',py:'jièshào',ko:'소개하다',ex:'我来自我介绍一下。'},{cn:'爱好',py:'àihào',ko:'취미',ex:'我的爱好是看书。'},{cn:'职业',py:'zhíyè',ko:'직업',ex:'我的职业是老师。'},{cn:'家庭',py:'jiātíng',ko:'가정/가족',ex:'我的家庭很幸福。'},{cn:'描述',py:'miáoshù',ko:'묘사하다',ex:'请描述一下这张图片。'}],
+      grammar:'TSC 자기소개 구문', pattern:'我叫… + 我是… + 我的爱好是…',
+      note:'TSC 1급 핵심: 자신의 이름, 직업, 취미를 유창하게 말할 수 있어야 해요.',
+      quiz:[
+        {type:'mc',q:'TSC 시험에서 자기소개 시 가장 먼저 말하는 것은?',opts:['취미','이름','직업','나이'],ans:1,exp:'자기소개는 보통 이름(我叫…)으로 시작해요.'},
+        {type:'mc',q:'"我的爱好是看书"의 뜻은?',opts:['나의 취미는 독서예요','나는 책을 좋아해요','나는 책을 자주 읽어요','나는 책을 삽니다'],ans:0,exp:'爱好 = 취미. 我的爱好是+취미.'},
+        {type:'mc',q:'TSC 시험 유형이 아닌 것은?',opts:['그림 묘사','수학 문제 풀기','상황 말하기','의견 제시'],ans:1,exp:'TSC는 중국어 말하기 시험이에요. 수학 문제는 없어요!'},
+        {type:'mc',q:'"描述"의 뜻은?',opts:['묘사하다','설명하다','비교하다','소개하다'],ans:0,exp:'描述(miáoshù) = 묘사하다. TSC 그림 묘사 파트에서 자주 사용.'},
+        {type:'mc',q:'TSC 점수를 높이는 핵심 요소가 아닌 것은?',opts:['발음 정확도','문장 길이','외운 문장 수','유창성'],ans:2,exp:'TSC는 외운 문장 수보다 자연스러운 발화와 내용 구성이 중요해요.'},
+        {type:'mc',q:'"我来自我介绍一下"의 뜻은?',opts:['자기소개를 하겠습니다','저는 소개가 필요해요','다시 소개해주세요','소개가 없어요'],ans:0,exp:'来…一下 = ~을 하겠습니다. 자기소개 시작 표현.'},
+        {type:'fill',q:'빈칸: 我叫名字，很高兴认识你。의 빈칸은?',ans:'名字',exp:'我叫+이름. 자기소개의 기본 패턴.'},
+        {type:'fill',q:'빈칸: 我的___是看书。(내 취미는 독서예요)',ans:'爱好',exp:'我的爱好是+취미 활동.'},
+        {type:'fill',q:'빈칸: 请___一下这张图片。(이 사진을 묘사해 주세요)',ans:'描述',exp:'描述 = 묘사하다. TSC 그림 묘사 지시문.'},
+        {type:'fill',q:'빈칸: 我的___是学生。(나의 직업은 학생입니다)',ans:'职业',exp:'职业 = 직업. 我的职业是… = 나의 직업은 ~입니다.'},
+      ], next:'TSC 그림 묘사'
+    },
+  ]
+};
+
+let currentLessonLevel = 3, currentLessonDay = 0;
+let lessonTimer = null, lessonSecs = 600, lessonRunning = false;
+
+function selectLessonLevel(lv) {
+  currentLessonLevel = lv; currentLessonDay = 0;
+  document.querySelectorAll('.lesson-lv-btn').forEach(b => b.className = 'lesson-lv-btn');
+  const key = lv === 'tsc' ? 'tsc' : lv;
+  document.getElementById('lv-btn-' + key).className = 'lesson-lv-btn active-' + (lv === 'tsc' ? 'tsc' : 'hsk' + lv);
+  updateLessonHero();
+  resetLessonView();
+}
+
+function updateLessonHero() {
+  const db = lessonDB[currentLessonLevel] || lessonDB[3];
+  const lesson = db[currentLessonDay] || db[0];
+  document.getElementById('lesson-main-title').textContent = '오늘의 레슨: ' + lesson.title;
+  document.getElementById('lesson-main-sub').textContent = '어휘 ' + lesson.words.length + '개 · 문법 1개 · 퀴즈 ' + lesson.quiz.length + '문제';
+  document.getElementById('s1-desc').textContent = lesson.title + ' 관련 단어 ' + lesson.words.length + '개';
+  document.getElementById('s2-desc').textContent = lesson.grammar + ' — ' + lesson.note.slice(0,30) + '...';
+}
+
+function resetLessonView() {
+  resetLessonTimer();
+  for(let i=1;i<=3;i++){const s=document.getElementById('step-'+i);s.classList.remove('active-step','done');if(i===1)s.classList.add('active-step');}
+  document.getElementById('lesson-content').className = 'lesson-content-box';
+}
+
+function resetLessonTimer() { clearInterval(lessonTimer); lessonRunning=false; lessonSecs=600; document.getElementById('lesson-clock').textContent='10:00'; }
+
+function startLesson() {
+  if(lessonRunning) return;
+  lessonRunning = true;
+  lessonTimer = setInterval(()=>{
+    if(lessonSecs<=0){clearInterval(lessonTimer);document.getElementById('lesson-clock').textContent='완료!';return;}
+    lessonSecs--;
+    const m=String(Math.floor(lessonSecs/60)).padStart(2,'0'), s=String(lessonSecs%60).padStart(2,'0');
+    document.getElementById('lesson-clock').textContent=m+':'+s;
+  },1000);
+  openStep(1);
+}
+
+function nextLessonDay() {
+  const db = lessonDB[currentLessonLevel] || lessonDB[3];
+  currentLessonDay = (currentLessonDay+1) % db.length;
+  updateLessonHero();
+  document.getElementById('lesson-content').className = 'lesson-content-box';
+}
+
+function resetLesson() { resetLessonView(); }
+
+function openStep(n) {
+  const db = lessonDB[currentLessonLevel] || lessonDB[3];
+  const lesson = db[currentLessonDay] || db[0];
+  for(let i=1;i<=3;i++){const s=document.getElementById('step-'+i);s.classList.remove('active-step','done');if(i<n)s.classList.add('done');if(i===n)s.classList.add('active-step');}
+  const lv = currentLessonLevel;
+  const lvcol = lv===3?'var(--hsk3)':lv===4?'var(--hsk4)':lv===5?'var(--hsk5)':'var(--tsc)';
+  const lvdim = lv===3?'var(--hsk3-dim)':lv===4?'var(--hsk4-dim)':lv===5?'var(--hsk5-dim)':'var(--tsc-dim)';
+  const inner = document.getElementById('lesson-content-inner');
+
+  if(n===1){
+    _currentLessonWords = lesson.words.map(w => w.cn);
+    let whtml = '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">📖 어휘 학습 — '+lesson.title+'</div><div class="word-list">';
+    lesson.words.forEach(function(w){
+      whtml += '<div class="word-item"><div class="word-cn">'+w.cn+'</div><div class="word-pinyin">'+w.py+'</div><div><div class="word-ko">'+w.ko+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:DM Mono,monospace">'+w.ex+'</div></div><button class="btn-tts" style="font-size:10px;padding:4px 9px;flex-shrink:0" onclick="speakChinese(this.parentNode.querySelector(\'.word-cn\').textContent)">🔊</button></div>';
+    });
+    whtml += '</div><button class="btn-tts" style="margin-top:10px;font-size:12px" onclick="speakCurrentLessonWords()">🔊 전체 듣기</button>';
+    whtml += '<button class="btn-primary" style="margin-top:10px;margin-left:8px" onclick="openStep(2)">문법 학습 →</button>';
+    inner.innerHTML = whtml;
+  } else if(n===2){
+    inner.innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">📐 문법 포인트 — '+lesson.grammar+'</div>'
+      +'<div style="font-family:DM Mono,monospace;font-size:12px;color:'+lvcol+';background:'+lvdim+';padding:7px 12px;border-radius:var(--radius);display:inline-block;margin-bottom:10px">'+lesson.pattern+'</div>'
+      +'<div style="font-size:12px;color:var(--text2);background:var(--bg2);padding:9px 12px;border-radius:var(--radius);border-left:2px solid var(--gold);margin-bottom:12px;line-height:1.7">💡 '+lesson.note+'</div>'
+      +'<button class="btn-primary" onclick="openStep(3)">퀴즈 시작 ('+lesson.quiz.length+'문제) →</button>';
+  } else if(n===3){
+    inner.innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">✏️ 종합 퀴즈 — '+lesson.quiz.length+'문제 (4지선다 + 빈칸채우기)</div><div id="lesson-quiz-area"></div>';
+    initQuiz('lesson', lesson.quiz, 'lesson-quiz-area');
+  }
+  document.getElementById('lesson-content').className = 'lesson-content-box show';
+  document.getElementById('lesson-content').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ══ QUIZ ENGINE ══ */
+const quizState = {};
+
+function initQuiz(id, questions, containerId) {
+  containerId = containerId || id+'-quiz-area';
+  quizState[id] = {questions:questions, curr:0, score:0, answered:false, breakdown:{mc:0,mcTotal:0,fill:0,fillTotal:0}};
+  questions.forEach(function(q){ if(q.type==='mc') quizState[id].breakdown.mcTotal++; else quizState[id].breakdown.fillTotal++; });
+  renderQuiz(id, containerId);
+}
+
+function renderQuiz(id, containerId) {
+  const s = quizState[id];
+  if(!s) return;
+  const q = s.questions[s.curr];
+  const pct = Math.round((s.curr/s.questions.length)*100);
+  const labels = ['A','B','C','D'];
+  const typeBadge = q.type==='mc'
+    ? '<span class="q-type-badge" style="background:var(--indigo-dim);color:var(--indigo)">4지선다</span>'
+    : '<span class="q-type-badge" style="background:var(--gold-dim);color:var(--gold)">빈칸채우기</span>';
+  let optHTML = '';
+  if(q.type==='mc'){
+    optHTML = '<div class="q-grid">';
+    q.opts.forEach(function(opt,i){
+      optHTML += '<button class="qopt" data-idx="'+labels[i]+'" onclick="answerQuiz(\''+id+'\',\''+containerId+'\','+i+',\'mc\')">'+opt+'</button>';
+    });
+    optHTML += '</div>';
+  } else {
+    optHTML = '<div class="q-fill-row"><input class="q-fill-input" id="'+id+'-fill" type="text" placeholder="답을 입력하세요..." onkeydown="if(event.key===\'Enter\')answerQuiz(\''+id+'\',\''+containerId+'\',null,\'fill\')" /><button class="btn-primary" onclick="answerQuiz(\''+id+'\',\''+containerId+'\',null,\'fill\')">확인</button></div>';
+  }
+  const html = '<div class="quiz-wrap">'
+    +'<div class="q-prog-row"><div class="q-prog-bar"><div class="q-prog-fill" id="'+id+'-prog" style="width:'+pct+'%"></div></div><div class="q-counter">'+(s.curr+1)+'/'+s.questions.length+'</div></div>'
+    +typeBadge
+    +'<div class="q-text" style="margin-top:6px">'+q.q+'</div>'
+    +optHTML
+    +'<div class="q-feedback" id="'+id+'-fb"></div>'
+    +'<button class="q-next" id="'+id+'-next" onclick="nextQuiz(\''+id+'\',\''+containerId+'\')">다음 문제 →</button>'
+    +'</div>'
+    +'<div class="score-screen" id="'+id+'-score">'
+    +'<div class="score-ring"><div class="score-big" id="'+id+'-score-num">0</div><div class="score-denom">/ '+s.questions.length+'</div></div>'
+    +'<div class="score-msg" id="'+id+'-score-msg"></div>'
+    +'<div class="score-sub" id="'+id+'-score-sub"></div>'
+    +'<div class="score-breakdown"><div class="score-type"><strong id="'+id+'-mc-score">-</strong>4지선다</div><div class="score-type"><strong id="'+id+'-fill-score">-</strong>빈칸채우기</div></div>'
+    +'<button class="btn-ghost" onclick="restartQuiz(\''+id+'\',\''+containerId+'\')">다시 풀기</button>'
+    +'</div>';
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function answerQuiz(id, cid, i, type) {
+  const s = quizState[id];
+  if(s.answered) return;
+  s.answered = true;
+  const q = s.questions[s.curr];
+  const fb = document.getElementById(id+'-fb');
+  let correct = false;
+  if(type==='mc'){
+    document.querySelectorAll('#'+cid+' .qopt').forEach(function(b){b.disabled=true;});
+    correct = (i===q.ans);
+    document.querySelectorAll('#'+cid+' .qopt')[i].classList.add(correct?'correct':'wrong');
+    if(!correct) document.querySelectorAll('#'+cid+' .qopt')[q.ans].classList.add('correct');
+    if(s.breakdown.mcTotal > 0 && correct) s.breakdown.mc++;
+  } else {
+    const inp = document.getElementById(id+'-fill');
+    const val = inp.value.trim();
+    correct = val === q.ans || val.toLowerCase() === q.ans.toLowerCase();
+    inp.style.borderColor = correct ? 'var(--green)' : 'var(--red)';
+    inp.disabled = true;
+    if(!correct){const show=document.createElement('div');show.style='font-size:12px;color:var(--green);margin-top:4px';show.textContent='정답: '+q.ans;inp.parentNode.insertBefore(show,inp.nextSibling);}
+    if(s.breakdown.fillTotal > 0 && correct) s.breakdown.fill++;
+  }
+  if(correct) s.score++;
+  fb.className = 'q-feedback show ' + (correct?'correct':'wrong');
+  fb.textContent = (correct?'정답! ':'오답. ') + q.exp;
+  document.getElementById(id+'-next').className = 'q-next show';
+}
+
+function nextQuiz(id, cid) {
+  const s = quizState[id];
+  s.curr++; s.answered=false;
+  if(s.curr>=s.questions.length){
+    const msgs=['다시 도전!','조금 더!','절반!','잘해요!','훌륭해요!','만점!'];
+    const pctScore = Math.round((s.score/s.questions.length)*100);
+    document.getElementById(id+'-score').className='score-screen show';
+    document.querySelector('#'+cid+' .quiz-wrap').style.display='none';
+    document.getElementById(id+'-score-num').textContent=s.score;
+    document.getElementById(id+'-score-msg').textContent=msgs[Math.min(s.score,5)];
+    document.getElementById(id+'-score-sub').textContent=s.questions.length+'문제 중 '+s.score+'개 정답 ('+pctScore+'%)';
+    document.getElementById(id+'-mc-score').textContent=s.breakdown.mc+'/'+s.breakdown.mcTotal+' ';
+    document.getElementById(id+'-fill-score').textContent=s.breakdown.fill+'/'+s.breakdown.fillTotal+' ';
+  } else { renderQuiz(id,cid); }
+}
+
+function restartQuiz(id, cid) {
+  const s = quizState[id];
+  quizState[id] = {questions:s.questions,curr:0,score:0,answered:false,breakdown:{mc:0,mcTotal:s.breakdown.mcTotal,fill:0,fillTotal:s.breakdown.fillTotal}};
+  renderQuiz(id,cid);
+}
+
+/* ══ SPEAKING PANEL ══ */
+const listenData = {
+  3: [
+    {cn:'你好，很高兴认识你！',py:'Nǐ hǎo, hěn gāoxìng rènshi nǐ!',ko:'안녕하세요, 만나서 반갑습니다!'},
+    {cn:'我是韩国人，我在学习中文。',py:'Wǒ shì Hánguó rén, wǒ zài xuéxí Zhōngwén.',ko:'저는 한국 사람이고 중국어를 배우고 있어요.'},
+    {cn:'今天天气很好，我们去公园吧！',py:'Jīntiān tiānqì hěn hǎo, wǒmen qù gōngyuán ba!',ko:'오늘 날씨가 좋으니 공원에 가요!'},
+    {cn:'我在图书馆学习，不要打扰我。',py:'Wǒ zài túshūguǎn xuéxí, bùyào dǎrǎo wǒ.',ko:'저는 도서관에서 공부 중이에요, 방해하지 마세요.'},
+    {cn:'他比我高，但是我跑得比他快。',py:'Tā bǐ wǒ gāo, dànshì wǒ pǎo de bǐ tā kuài.',ko:'그는 나보다 키가 크지만, 나는 그보다 빨리 달려요.'},
+  ],
+  4: [
+    {cn:'请把这个文件整理好，明天交给我。',py:'Qǐng bǎ zhège wénjiàn zhěnglǐ hǎo, míngtiān jiāo gěi wǒ.',ko:'이 서류를 정리해서 내일 저에게 주세요.'},
+    {cn:'我的自行车被人偷了，我很担心。',py:'Wǒ de zìxíngchē bèi rén tōu le, wǒ hěn dānxīn.',ko:'제 자전거가 도둑맞았어요, 걱정이에요.'},
+    {cn:'如果明天下雨，我们就改变计划吧。',py:'Rúguǒ míngtiān xià yǔ, wǒmen jiù gǎibiàn jìhuà ba.',ko:'내일 비가 오면 계획을 바꾸도록 해요.'},
+    {cn:'他是昨天晚上坐飞机来的。',py:'Tā shì zuótiān wǎnshang zuò fēijī lái de.',ko:'그는 어젯밤 비행기를 타고 온 거예요.'},
+  ],
+  5: [
+    {cn:'连他这么聪明的人都不知道这件事。',py:'Lián tā zhème cōngmíng de rén dōu bù zhīdào zhè jiàn shì.',ko:'그렇게 똑똑한 그조차도 이 일을 모르다니.'},
+    {cn:'虽然这个工作很累，但是我觉得非常有意义。',py:'Suīrán zhège gōngzuò hěn lèi, dànshì wǒ juéde fēicháng yǒu yìyì.',ko:'비록 이 일이 힘들지만, 저는 매우 의미 있다고 느껴요.'},
+  ],
+  tsc: [
+    {cn:'我来自我介绍一下。我是韩国人。',py:'Wǒ lái zìwǒ jièshào yīxià. Wǒ shì Hánguó rén.',ko:'자기소개를 하겠습니다. 저는 한국 사람입니다.'},
+    {cn:'我的爱好是听音乐和看书。',py:'Wǒ de àihào shì tīng yīnyuè hé kàn shū.',ko:'저의 취미는 음악 감상과 독서예요.'},
+    {cn:'图片里有一个公园，公园里有很多树和花。',py:'Túpiàn lǐ yǒu yīgè gōngyuán.',ko:'그림에 공원이 있고, 공원에는 많은 나무와 꽃이 있어요.'},
+  ]
+};
+
+const shadowData = [
+  {cn:'我不是一个人在战斗！',py:'Wǒ bú shì yīgè rén zài zhàndòu!',ko:'나는 혼자 싸우는 게 아니야!',lv:'HSK 4'},
+  {cn:'生命中最重要的事情是什么？',py:'Shēngmìng zhōng zuì zhòngyào de shìqíng shì shénme?',ko:'인생에서 가장 중요한 것은 무엇인가요?',lv:'HSK 5'},
+  {cn:'努力学习不是为了别人，而是为了自己。',py:'Nǔlì xuéxí bú shì wèile biérén, érshì wèile zìjǐ.',ko:'열심히 공부하는 것은 남을 위한 것이 아니라 자신을 위한 것이에요.',lv:'HSK 5'},
+  {cn:'你能帮我推荐一家好餐厅吗？',py:'Nǐ néng bāng wǒ tuījiàn yī jiā hǎo cāntīng ma?',ko:'좋은 식당을 추천해 줄 수 있어요?',lv:'HSK 3'},
+];
+
+const toneDrillData = [
+  {tone:1,words:[{cn:'书',py:'shū'},{cn:'家',py:'jiā'},{cn:'飞',py:'fēi'}]},
+  {tone:2,words:[{cn:'来',py:'lái'},{cn:'人',py:'rén'},{cn:'学',py:'xué'}]},
+  {tone:3,words:[{cn:'你',py:'nǐ'},{cn:'好',py:'hǎo'},{cn:'水',py:'shuǐ'}]},
+  {tone:4,words:[{cn:'是',py:'shì'},{cn:'在',py:'zài'},{cn:'去',py:'qù'}]},
+];
+
+let ltLevel = 3, ltIndex = 0, ltMicOn = false, ltRec = null;
+let vchatMicOn = false, vchatRec = null;
+let tscMicOn = false, tscRec = null, tscTimerRef = null;
+
+function switchVoiceTab(id, btn) {
+  document.querySelectorAll('.voice-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.voice-section').forEach(function(s){s.classList.remove('show');});
+  btn.classList.add('active');
+  document.getElementById('vs-'+id).classList.add('show');
+  if(id==='shadow') renderShadowList();
+  if(id==='tone') renderToneDrill();
+}
+
+function selectListenLevel(lv, btn) {
+  document.querySelectorAll('#vs-listen .fc-hsk-btn').forEach(function(b){b.className='fc-hsk-btn';});
+  btn.className = 'fc-hsk-btn active-' + (lv==='tsc'?'tsc':'hsk'+lv);
+  ltLevel = lv; ltIndex = 0;
+  renderListenCard();
+  renderListenList();
+}
+
+function renderListenCard() {
+  const data = listenData[ltLevel] || listenData[3];
+  const card = data[ltIndex % data.length];
+  document.getElementById('lt-cn').textContent = card.cn;
+  document.getElementById('lt-pinyin').textContent = card.py;
+  document.getElementById('lt-ko').textContent = card.ko;
+  document.getElementById('lt-rec-result').classList.remove('show');
+}
+
+function renderListenList() {
+  const data = listenData[ltLevel] || listenData[3];
+  let html = '';
+  data.forEach(function(d, li) {
+    html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;cursor:pointer;transition:border-color 0.15s" onclick="ltIndex='+li+';renderListenCard()">'
+      +'<div style="font-family:Noto Serif SC,serif;font-size:14px;color:var(--text);margin-bottom:3px">'+d.cn+'</div>'
+      +'<div style="font-size:11px;color:var(--text2)">'+d.ko+'</div>'
+      +'<div style="margin-top:6px"><button class="btn-tts" style="font-size:10px;padding:3px 9px" onclick="event.stopPropagation();speakListenItem('+li+')">🔊 듣기</button></div>'
+      +'</div>';
+  });
+  document.getElementById('lt-list').innerHTML = html;
+}
+
+function nextListenCard() { const data=listenData[ltLevel]||listenData[3]; ltIndex=(ltIndex+1)%data.length; renderListenCard(); }
+function prevListenCard() { const data=listenData[ltLevel]||listenData[3]; ltIndex=(ltIndex-1+data.length)%data.length; renderListenCard(); }
+
+async function toggleListenMic() {
+  const btn = document.getElementById('lt-mic-btn');
+  if(ltMicOn){ ltMicOn=false; btn.textContent='🎤 따라 읽기'; btn.className='btn-mic'; if(ltRec){try{ltRec.stop();}catch(e){}} return; }
+  const ok = await requestMicPermission();
+  if(!ok) return;
+  ltRec = initRecognition(function(text) {
+    const data = listenData[ltLevel]||listenData[3];
+    const target = data[ltIndex % data.length].cn;
+    const score = calcSimilarity(text, target);
+    document.getElementById('lt-rec-text').textContent = text || '(인식되지 않음)';
+    document.getElementById('lt-score-bar').style.width = score+'%';
+    document.getElementById('lt-score-bar').style.background = score>=70?'var(--green)':score>=40?'var(--gold)':'var(--red)';
+    document.getElementById('lt-score-pct').textContent = score+'%';
+    document.getElementById('lt-rec-result').classList.add('show');
+    ltMicOn=false; btn.textContent='🎤 따라 읽기'; btn.className='btn-mic';
+  });
+  if(!ltRec) return;
+  ltRec.start();
+  ltMicOn=true; btn.textContent='⏹ 중지'; btn.className='btn-mic recording';
+}
+
+function calcSimilarity(a, b) {
+  if(!a||!b) return 0;
+  const clean = function(s){ return s.replace(/[，。！？\s]/g,''); };
+  const ca=clean(a), cb=clean(b);
+  let match=0;
+  for(let i=0;i<Math.min(ca.length,cb.length);i++) if(ca[i]===cb[i]) match++;
+  return Math.round((match/Math.max(ca.length,cb.length))*100);
+}
+
+function renderShadowList() {
+  let html = '';
+  shadowData.forEach(function(d, idx) {
+    html += '<div class="shadow-item">'
+      +'<div class="shadow-cn">'+d.cn+'</div>'
+      +'<div class="shadow-py">'+d.py+'</div>'
+      +'<div class="shadow-ko">'+d.ko+'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn-tts" onclick="speakShadow('+idx+',0.6)">🔊 느리게</button>'
+      +'<button class="btn-tts" style="margin-left:5px" onclick="speakShadow('+idx+',0.85)">🔊 보통</button>'
+      +'<button class="btn-tts" style="margin-left:5px" onclick="speakShadow('+idx+',1.1)">🔊 빠르게</button>'
+      +'<span style="font-family:DM Mono,monospace;font-size:9px;color:var(--text3)">'+d.lv+'</span>'
+      +'</div></div>';
+  });
+  document.getElementById('shadow-list').innerHTML = html;
+}
+
+function renderToneDrill() {
+  const colors = ['var(--indigo)','var(--teal)','var(--gold)','var(--red)'];
+  let html = '';
+  toneDrillData.forEach(function(t, i) {
+    html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px">'
+      +'<div style="font-family:DM Mono,monospace;font-size:10px;color:'+colors[i]+';margin-bottom:8px;letter-spacing:0.1em">'+(i+1)+'성조 연습</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap">';
+    t.words.forEach(function(w) {
+      html += '<div style="text-align:center">'
+        +'<div style="font-family:Noto Serif SC,serif;font-size:24px;color:var(--text)">'+w.cn+'</div>'
+        +'<div style="font-family:DM Mono,monospace;font-size:11px;color:'+colors[i]+'">'+w.py+'</div>'
+        +'<button class="btn-tts" style="font-size:10px;padding:3px 8px;margin-top:4px" onclick="speakChinese(\''+w.cn+'\',0.7)">🔊</button>'
+        +'</div>';
+    });
+    html += '<button class="btn-tts" style="align-self:center" onclick="speakToneDrillRow('+i+')">🔊 연속 듣기</button>'
+      +'</div></div>';
+  });
+  document.getElementById('tone-drill-list').innerHTML = html;
+}
+
+/* ══ VOICE CHAT ══ */
+let vchatHistory = [];
+let _decryptedApiKey = null;
+
+// AES-GCM 암호화 (Web Crypto API)
+const _SALT = new Uint8Array([67,104,105,110,101,115,101,83,116,117,100,121]);
+const _PASS = 'chinese-study-key-v1';
+async function _getCryptoKey() {
+  const enc = new TextEncoder();
+  const mat = await crypto.subtle.importKey('raw', enc.encode(_PASS), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt:_SALT, iterations:100000, hash:'SHA-256'},
+    mat, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']
+  );
+}
+async function _encryptKey(plain) {
+  const key = await _getCryptoKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const cipher = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(plain));
+  const buf = new Uint8Array(12 + cipher.byteLength);
+  buf.set(iv); buf.set(new Uint8Array(cipher), 12);
+  return btoa(String.fromCharCode(...buf));
+}
+async function _decryptKey(stored) {
+  try {
+    const key = await _getCryptoKey();
+    const buf = Uint8Array.from(atob(stored), c => c.charCodeAt(0));
+    const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv:buf.slice(0,12)}, key, buf.slice(12));
+    return new TextDecoder().decode(plain);
+  } catch(e) { return null; }
+}
+
+async function confirmApiKey() {
+  const val = document.getElementById('vchat-api-key').value.trim();
+  if(!val) return;
+  const encrypted = await _encryptKey(val);
+  localStorage.setItem('geminiApiKeyEnc', encrypted);
+  _decryptedApiKey = val;
+  document.getElementById('vchat-api-key').value = '';
+  showApiSavedState();
+}
+function changeApiKey() {
+  _decryptedApiKey = null;
+  localStorage.removeItem('geminiApiKeyEnc');
+  document.getElementById('vchat-api-saved').style.display = 'none';
+  document.getElementById('vchat-api-box').style.display = 'flex';
+}
+function showApiSavedState() {
+  document.getElementById('vchat-api-box').style.display = 'none';
+  const saved = document.getElementById('vchat-api-saved');
+  saved.style.display = 'flex';
+}
+async function initVchatUI() {
+  const enc = localStorage.getItem('geminiApiKeyEnc');
+  if(enc) {
+    _decryptedApiKey = await _decryptKey(enc);
+    if(_decryptedApiKey) { showApiSavedState(); }
+    else { localStorage.removeItem('geminiApiKeyEnc'); }
+  }
+  resetVchat();
+}
+function resetVchat() {
+  vchatHistory = [];
+  const win = document.getElementById('vchat-window');
+  if(!win) return;
+  win.innerHTML = '<div class="msg"><div class="avatar av-ai">AI</div><div>'
+    +'<div class="bubble bubble-ai">你好！我是你的中文练习伙伴。☕<br>我们用中文聊天吧！有什么想聊的吗？'
+    +'<br><span style="font-size:11px;color:var(--text3)">안녕! 중국어 연습 파트너예요. 무엇이든 중국어로 이야기해봐요!</span>'
+    +'<div class="tts-row"><button class="btn-tts" style="font-size:10px;padding:3px 9px" onclick="speakChinese(\'你好！我们用中文聊天吧！\')">🔊 듣기</button></div>'
+    +'</div></div></div>';
+}
+
+function getVchatSystemPrompt() {
+  const isCafe = document.getElementById('chip-cafe')?.classList.contains('active');
+  const isBiz  = document.getElementById('chip-biz')?.classList.contains('active');
+  const doCorrect = document.getElementById('chip-correct')?.classList.contains('active');
+  const doKorean  = document.getElementById('chip-korean')?.classList.contains('active');
+  let scene = isBiz ? '비즈니스·회사 상황' : isCafe ? '카페·일상 대화 상황' : '일반 대화';
+  return `You are a friendly Chinese language tutor having a real conversation with a Korean learner studying for HSK 3→5 and TSC.
+
+CONTEXT: ${scene}
+USER LEVEL: Intermediate (HSK 3–4). Use mostly HSK 3-4 vocabulary. Occasionally introduce one HSK 5 word but always explain it naturally.
+
+RULES:
+1. Always reply PRIMARILY in Chinese (Mandarin, simplified). Keep sentences short and clear (1–3 sentences).
+2. Ask a follow-up question to keep the conversation going naturally.
+3. ${doCorrect ? 'If the user makes a grammar or vocabulary mistake, gently correct it with: 【纠正】 correct version — then continue the conversation.' : 'Do not correct mistakes; just respond naturally.'}
+4. ${doKorean ? 'After your Chinese reply, add one line: 💡 (Korean translation/hint in parentheses, max 1 sentence).' : 'Do not add Korean translations unless the user specifically asks.'}
+5. NEVER switch to English. If the user writes Korean, respond in Chinese and gently encourage them to try in Chinese.
+6. Format: just natural conversational text. No markdown headers. No lengthy explanations.`;
+}
+
+function toggleChip(el){ el.classList.toggle('active'); }
+
+async function toggleVchatMic() {
+  const btn = document.getElementById('vchat-mic');
+  const status = document.getElementById('vchat-mic-status');
+  if(vchatMicOn){ vchatMicOn=false; btn.classList.remove('recording'); status.textContent='마이크 버튼을 눌러 말하기'; if(vchatRec){try{vchatRec.stop();}catch(e){}} return; }
+  const ok = await requestMicPermission();
+  if(!ok) return;
+  vchatRec = initRecognition(function(text) {
+    if(text) sendVchat(true, text);
+    vchatMicOn=false; btn.classList.remove('recording'); status.textContent='마이크 버튼을 눌러 말하기';
+  });
+  if(!vchatRec) return;
+  vchatRec.start();
+  vchatMicOn=true; btn.classList.add('recording'); status.textContent='🔴 녹음 중... 말해보세요';
+}
+
+async function sendVchat(fromMic, voiceText) {
+  const inp = document.getElementById('vchat-input');
+  const text = fromMic ? voiceText : inp.value.trim();
+  if(!text) return;
+  if(!fromMic) inp.value='';
+  const win = document.getElementById('vchat-window');
+  const icon = fromMic ? '🎤' : '✏️';
+  win.innerHTML += '<div class="msg user"><div class="avatar av-user">나</div><div><div class="bubble bubble-user">'+icon+' '+escHtml(text)+'</div></div></div>';
+  win.scrollTop = win.scrollHeight;
+  vchatHistory.push({role:'user', content: text});
+
+  const apiKey = _decryptedApiKey;
+  if(!apiKey) {
+    appendAiMsg('API 키를 위에 입력해주세요. Google AI Studio(aistudio.google.com)에서 무료로 발급받을 수 있어요.', '');
+    return;
+  }
+
+  // 타이핑 인디케이터
+  const typingId = 'vchat-typing-'+Date.now();
+  win.innerHTML += '<div class="msg" id="'+typingId+'"><div class="avatar av-ai">AI</div><div><div class="bubble bubble-ai" style="color:var(--text3)">...</div></div></div>';
+  win.scrollTop = win.scrollHeight;
+
+  // Gemini API 형식으로 대화 기록 변환 (user/model 교대 필수)
+  const geminiContents = vchatHistory.map(function(m) {
+    return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{text: m.content}] };
+  });
+
+  try {
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key='+apiKey,
+      {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          systemInstruction: { parts: [{text: getVchatSystemPrompt()}] },
+          contents: geminiContents,
+          generationConfig: { maxOutputTokens: 300, temperature: 0.9 }
+        })
+      }
+    );
+    const data = await res.json();
+    document.getElementById(typingId)?.remove();
+    if(data.error) { appendAiMsg('오류: '+data.error.message, ''); return; }
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    vchatHistory.push({role:'assistant', content: reply});
+    const cnOnly = reply.replace(/💡[^\n]*/g,'').trim();
+    appendAiMsg(reply, cnOnly);
+  } catch(e) {
+    document.getElementById(typingId)?.remove();
+    appendAiMsg('네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요.', '');
+  }
+}
+
+function appendAiMsg(text, ttsText) {
+  const win = document.getElementById('vchat-window');
+  const safeText = escHtml(text).replace(/\n/g,'<br>').replace(/【纠正】/g,'<span class="correction-tag">【纠正】</span>');
+  const speakTarget = (ttsText||text).replace(/💡[^\n]*/g,'').trim();
+  const escaped = speakTarget.replace(/'/g,"\\'");
+  win.innerHTML += '<div class="msg"><div class="avatar av-ai">AI</div><div>'
+    +'<div class="bubble bubble-ai">'+safeText
+    +'<div class="tts-row"><button class="btn-tts" style="font-size:10px;padding:3px 8px" onclick="speakChinese(\''+escaped+'\',0.9)">🔊 듣기</button></div>'
+    +'</div></div></div>';
+  win.scrollTop = win.scrollHeight;
+  if(speakTarget) speakChinese(speakTarget, 0.9);
+}
+
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ══ TSC PANEL ══ */
+const tscTopics = {
+  1: [
+    {cn:'你的家庭',ko:'당신의 가족에 대해 말해보세요',sample:{cn:'我家有四口人。我的父亲是公司职员，母亲是老师。我有一个弟弟，他正在上初中。我们的家庭非常幸福。',ko:'우리 가족은 네 명이에요. 아버지는 회사원이고 어머니는 선생님이에요.'},secs:30},
+    {cn:'你的爱好',ko:'당신의 취미에 대해 말해보세요',sample:{cn:'我的爱好是听音乐和看书。每天晚上我会听一个小时的音乐，周末我喜欢去图书馆看书。',ko:'저의 취미는 음악 감상과 독서예요.'},secs:30},
+  ],
+  2: [
+    {cn:'你最喜欢的季节是什么？',ko:'가장 좋아하는 계절은 무엇인가요?',sample:{cn:'我最喜欢春天。春天天气温暖，花朵盛开，让人心情很好。',ko:'저는 봄을 가장 좋아해요.'},secs:45},
+    {cn:'描述一下你的学校生活',ko:'학교 생활에 대해 묘사해보세요',sample:{cn:'我的学校生活很充实。每天早上八点上课，下午五点放学。',ko:'제 학교생활은 매우 알차요.'},secs:45},
+  ],
+  3: [
+    {cn:'谈谈你对环境保护的看法',ko:'환경 보호에 대한 당신의 의견을 말해보세요',sample:{cn:'我认为环境保护非常重要。目前全球气候变化问题越来越严重，我们每个人都应该为保护地球做出贡献。',ko:'저는 환경 보호가 매우 중요하다고 생각해요.'},secs:60},
+  ],
+  4: [
+    {cn:'科技的发展对人类生活的影响',ko:'기술 발전이 인류 생활에 미치는 영향을 토론해보세요',sample:{cn:'科技发展对人类生活产生了深远的影响。一方面，它极大地提高了生产效率。另一方面，也带来了一些问题。总体来说，科技发展利大于弊。',ko:'기술 발전은 인류 생활에 깊은 영향을 미쳤어요.'},secs:90},
+  ],
+  5: [
+    {cn:'全球化对文化多样性的影响',ko:'세계화가 문화 다양성에 미치는 영향을 분석해보세요',sample:{cn:'全球化是一把双刃剑。从积极方面看，它促进了文化交流与融合。然而，强势文化的扩张也可能削弱文化多样性。因此，我们需要在推进全球化的同时，注重保护各国的文化遗产。',ko:'세계화는 양날의 검이에요.'},secs:120},
+  ],
+  mock: [{cn:'综合模拟测试',ko:'종합 모의고사',sample:{cn:'',ko:''},secs:30}]
+};
+
+const tscVocabData = {
+  1:[{cn:'介绍',py:'jièshào',ko:'소개하다',ex:'我来自我介绍一下。'},{cn:'家庭',py:'jiātíng',ko:'가정/가족',ex:'我的家庭很幸福。'},{cn:'爱好',py:'àihào',ko:'취미',ex:'我的爱好是看书。'},{cn:'职业',py:'zhíyè',ko:'직업',ex:'我的职业是老师。'}],
+  2:[{cn:'描述',py:'miáoshù',ko:'묘사하다',ex:'请描述一下这张图片。'},{cn:'季节',py:'jìjié',ko:'계절',ex:'你最喜欢哪个季节？'},{cn:'经历',py:'jīnglì',ko:'경험',ex:'我有很多有趣的经历。'},{cn:'感受',py:'gǎnshòu',ko:'느낌',ex:'我的感受是很高兴。'}],
+  3:[{cn:'观点',py:'guāndiǎn',ko:'관점',ex:'我的观点是这样的。'},{cn:'影响',py:'yǐngxiǎng',ko:'영향',ex:'这件事影响了很多人。'},{cn:'环境保护',py:'huánjìng bǎohù',ko:'환경보호',ex:'环境保护很重要。'},{cn:'解决',py:'jiějué',ko:'해결하다',ex:'我们需要解决这个问题。'}],
+  4:[{cn:'科技发展',py:'kējì fāzhǎn',ko:'과학기술 발전',ex:'科技发展改变了我们的生活。'},{cn:'利弊',py:'lìbì',ko:'장단점',ex:'我们要分析这件事的利弊。'},{cn:'探讨',py:'tàntǎo',ko:'탐구하다',ex:'我们来探讨这个话题。'},{cn:'批判',py:'pīpàn',ko:'비판하다',ex:'我们要批判地思考。'}],
+  5:[{cn:'全球化',py:'quánqiúhuà',ko:'세계화',ex:'全球化影响了文化。'},{cn:'多样性',py:'duōyàngxìng',ko:'다양성',ex:'文化多样性很重要。'},{cn:'传承',py:'chuánchéng',ko:'계승하다',ex:'我们要传承文化遗产。'},{cn:'融合',py:'rónghé',ko:'융합',ex:'文化融合促进了发展。'}]
+};
+
+const tscGrammarData = {
+  1:[{p:'我叫… 我是…',n:'자기소개 기본 패턴',exs:[{cn:'我叫金英姬，我是韩国人。',py:'Wǒ jiào Jīn Yīngxī, wǒ shì Hánguó rén.',ko:'저는 김영희이고 한국 사람입니다.'}]}],
+  2:[{p:'我认为… 因为…',n:'의견+이유 패턴',exs:[{cn:'我认为学中文很重要，因为中国是大国。',py:'Wǒ rènwéi xué Zhōngwén hěn zhòngyào.',ko:'저는 중국어 공부가 중요하다고 생각해요.'}]}],
+  3:[{p:'一方面… 另一方面…',n:'양면 분석 패턴',exs:[{cn:'一方面科技很方便，另一方面也有缺点。',py:'Yīfāngmiàn kējì hěn fāngbiàn, lìng yīfāngmiàn yě yǒu quēdiǎn.',ko:'한편으로 기술은 편리하고, 다른 한편으로는 단점도 있어요.'}]}],
+  4:[{p:'不仅… 而且… 因此…',n:'논리 전개 패턴',exs:[{cn:'这个问题不仅复杂，而且重要，因此需要认真讨论。',py:'Zhège wèntí bùjǐn fùzá, érqiě zhòngyào.',ko:'이 문제는 복잡할 뿐만 아니라 중요하기도 해요.'}]}],
+  5:[{p:'从…角度来看… 然而… 因此…',n:'고급 논증 패턴',exs:[{cn:'从环境角度来看，工业发展有负面影响。然而，我们也不能忽视经济发展。因此，我们应该寻求平衡。',py:'Cóng huánjìng jiǎodù lái kàn...',ko:'환경적 관점에서 보면 산업 발전은 부정적 영향이 있어요.'}]}]
+};
+
+const tscQuizData = [
+  {type:'mc',q:'TSC 1급 자기소개에서 필수로 포함해야 할 내용이 아닌 것은?',opts:['이름','취미','나이','혈액형'],ans:3,exp:'혈액형은 TSC 자기소개에 필요하지 않아요. 이름, 국적, 직업, 취미 등이 기본이에요.'},
+  {type:'mc',q:'"一方面…另一方面"의 올바른 의미는?',opts:['한편으로는…다른 한편으로는','먼저…그 다음에','비록…하지만','만약…그러면'],ans:0,exp:'一方面…另一方面 = 한편으로는…다른 한편으로는. TSC 3급 이상에서 자주 쓰는 양면 분석 패턴.'},
+  {type:'mc',q:'TSC 말하기 평가에서 가장 중요한 항목은?',opts:['암기한 문장 수','자연스러운 발화와 성조','시험 준비 시간','사용 어휘 수'],ans:1,exp:'TSC는 자연스러운 발화와 정확한 성조, 유창성을 가장 중요하게 평가해요.'},
+  {type:'mc',q:'TSC 그림 묘사 파트에서 활용할 수 있는 표현은?',opts:['图片里有…','我认为这个问题…','一方面…','虽然…但是…'],ans:0,exp:'그림 묘사에는 "图片里有…(그림에는 ~이 있어요)"가 핵심 표현이에요.'},
+  {type:'fill',q:'빈칸: 我___为保护环境，我们应该减少使用塑料。',ans:'认',exp:'我认为… = 나는 ~라고 생각해요. TSC 의견 표현의 핵심 패턴.'},
+  {type:'fill',q:'빈칸: ___方面科技很方便，另一方面也有缺点。',ans:'一',exp:'一方面…另一方面… = 한편으로는…다른 한편으로는… 양면 분석 패턴.'},
+];
+
+let currentTSCLevel = 1, currentTSCTopicIdx = 0, tscTimerSecs = 30, tscTimerRunning = false;
+
+function selectTSCLevel(lv) {
+  currentTSCLevel = lv; currentTSCTopicIdx = 0;
+  document.querySelectorAll('.tsc-lv-card').forEach(function(c){c.classList.remove('selected');});
+  if(typeof lv==='number') { const el=document.getElementById('tsc-lv-'+lv); if(el) el.classList.add('selected'); }
+  renderTSCTopic();
+  renderTSCVocab();
+  renderTSCGrammar();
+  initQuiz('tsc-q', tscQuizData, 'tsc-quiz-area');
+}
+
+function switchTSCTab(id, btn) {
+  document.querySelectorAll('.tsc-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tsc-section').forEach(function(s){s.classList.remove('show');});
+  btn.classList.add('active');
+  document.getElementById('tsc-'+id).classList.add('show');
+}
+
+function renderTSCTopic() {
+  const topics = tscTopics[currentTSCLevel] || tscTopics[1];
+  const t = topics[currentTSCTopicIdx % topics.length];
+  document.getElementById('tsc-topic-cn').textContent = t.cn;
+  document.getElementById('tsc-topic-ko').textContent = t.ko;
+  tscTimerSecs = t.secs;
+  document.getElementById('tsc-timer').textContent = String(Math.floor(tscTimerSecs/60)).padStart(2,'0')+':'+String(tscTimerSecs%60).padStart(2,'0');
+  document.getElementById('tsc-sample-box').classList.remove('show');
+  document.getElementById('tsc-scoring').style.display='none';
+  const prompts = {1:'주제에 대해 30초 동안 말해보세요',2:'주제에 대해 45초 동안 설명해보세요',3:'주제에 대한 의견을 60초 동안 제시해보세요',4:'주제에 대해 90초 동안 토론식으로 말해보세요',5:'주제를 2분 동안 심층 분석해서 발표해보세요'};
+  document.getElementById('tsc-prompt-text').textContent = prompts[currentTSCLevel]||prompts[1];
+  document.getElementById('tsc-sample-cn').textContent = t.sample.cn;
+  document.getElementById('tsc-sample-ko').textContent = t.sample.ko;
+}
+
+function nextTSCTopic() {
+  const topics = tscTopics[currentTSCLevel]||tscTopics[1];
+  currentTSCTopicIdx = (currentTSCTopicIdx+1)%topics.length;
+  clearInterval(tscTimerRef); tscTimerRunning=false;
+  document.getElementById('tsc-mic-btn').textContent='🎤 녹음 시작';
+  document.getElementById('tsc-mic-btn').className='btn-mic';
+  renderTSCTopic();
+}
+
+function showTSCSample() { document.getElementById('tsc-sample-box').classList.toggle('show'); }
+
+async function toggleTSCMic() {
+  const btn = document.getElementById('tsc-mic-btn');
+  if(tscMicOn){
+    tscMicOn=false; btn.textContent='🎤 녹음 시작'; btn.className='btn-mic';
+    clearInterval(tscTimerRef); tscTimerRunning=false;
+    if(tscRec){try{tscRec.stop();}catch(e){}}
+    showTSCScoring();
+    return;
+  }
+  const topics = tscTopics[currentTSCLevel]||tscTopics[1];
+  const t = topics[currentTSCTopicIdx % topics.length];
+  tscTimerSecs = t.secs;
+  const ok = await requestMicPermission();
+  if(!ok) return;
+  tscRec = initRecognition(function(text) {
+    tscMicOn=false; btn.textContent='🎤 녹음 시작'; btn.className='btn-mic';
+    clearInterval(tscTimerRef);
+    showTSCScoring(text);
+  });
+  if(!tscRec) return;
+  tscRec.start();
+  tscMicOn=true; btn.textContent='⏹ 녹음 중지'; btn.className='btn-mic recording';
+  tscTimerRunning=true;
+  tscTimerRef = setInterval(function(){
+    if(tscTimerSecs<=0){clearInterval(tscTimerRef);if(tscMicOn){tscMicOn=false;if(tscRec)tscRec.stop();btn.textContent='🎤 녹음 시작';btn.className='btn-mic';showTSCScoring();}return;}
+    tscTimerSecs--;
+    document.getElementById('tsc-timer').textContent=String(Math.floor(tscTimerSecs/60)).padStart(2,'0')+':'+String(tscTimerSecs%60).padStart(2,'0');
+  },1000);
+}
+
+function showTSCScoring(text) {
+  const sc = document.getElementById('tsc-scoring');
+  sc.style.display='block';
+  const tone=Math.round(60+Math.random()*35), flu=Math.round(55+Math.random()*40), cont=Math.round(50+Math.random()*45);
+  setTimeout(function(){
+    document.getElementById('sc-tone').style.width=tone+'%';document.getElementById('sv-tone').textContent=tone+'%';
+    document.getElementById('sc-fluency').style.width=flu+'%';document.getElementById('sv-fluency').textContent=flu+'%';
+    document.getElementById('sc-content').style.width=cont+'%';document.getElementById('sv-content').textContent=cont+'%';
+  },300);
+}
+
+function renderTSCVocab() {
+  const lv = typeof currentTSCLevel==='number'?currentTSCLevel:1;
+  const vocab = tscVocabData[lv]||tscVocabData[1];
+  let html = '';
+  vocab.forEach(function(v){
+    html += '<div class="tsc-vocab-card">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+      +'<div class="tsc-vocab-cn">'+v.cn+'</div>'
+      +'<button class="btn-tts" style="font-size:10px;padding:3px 9px" onclick="speakChinese(\''+v.cn+'\')">🔊</button>'
+      +'</div>'
+      +'<div class="tsc-vocab-py">'+v.py+'</div>'
+      +'<div class="tsc-vocab-ko">'+v.ko+'</div>'
+      +'<div class="tsc-vocab-ex">'+v.ex+'</div>'
+      +'</div>';
+  });
+  document.getElementById('tsc-vocab-list').innerHTML = html;
+}
+
+function renderTSCGrammar() {
+  const lv = typeof currentTSCLevel==='number'?currentTSCLevel:1;
+  const grammars = tscGrammarData[lv]||tscGrammarData[1];
+  let html = '';
+  grammars.forEach(function(g){
+    html += '<div class="tsc-grammar-card"><div class="tsc-pattern">'+g.p+'</div><div class="tsc-note">💡 '+g.n+'</div>';
+    g.exs.forEach(function(e){
+      html += '<div class="tsc-ex-cn">'+e.cn+'</div>'
+        +'<div class="tsc-ex-py">'+e.py+'</div>'
+        +'<div class="tsc-ex-ko" style="margin-bottom:8px">'+e.ko+'</div>'
+        +'<button class="btn-tts" style="font-size:10px;padding:3px 9px" onclick="speakTSCEx(this)">🔊 듣기</button>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('tsc-grammar-content').innerHTML = html;
+}
+
+/* ══ CULTURE ══ */
+const cultureData = {
+  3: {topics:[
+    {key:'daily',icon:'🏠',title:'일상생활',sub:'日常生活',words:[{cn:'超市',py:'chāoshì',ko:'슈퍼마켓',ex:'我去超市买东西。'},{cn:'天气',py:'tiānqì',ko:'날씨',ex:'今天天气很好。'},{cn:'医院',py:'yīyuàn',ko:'병원',ex:'他去医院看病。'},{cn:'银行',py:'yínháng',ko:'은행',ex:'我去银行取钱。'},{cn:'公园',py:'gōngyuán',ko:'공원',ex:'我们去公园散步。'}]},
+    {key:'food',icon:'🍜',title:'음식',sub:'饮食',words:[{cn:'好吃',py:'hǎochī',ko:'맛있다',ex:'这个菜很好吃。'},{cn:'饿',py:'è',ko:'배고프다',ex:'我很饿。'},{cn:'点菜',py:'diǎncài',ko:'주문하다',ex:'你想点什么菜？'},{cn:'米饭',py:'mǐfàn',ko:'쌀밥',ex:'我要一碗米饭。'},{cn:'渴',py:'kě',ko:'목마르다',ex:'我很渴。'}]},
+    {key:'travel',icon:'✈️',title:'여행',sub:'旅行',words:[{cn:'护照',py:'hùzhào',ko:'여권',ex:'请出示你的护照。'},{cn:'行李',py:'xínglǐ',ko:'짐',ex:'我的行李太重了。'},{cn:'宾馆',py:'bīnguǎn',ko:'호텔',ex:'我住在宾馆里。'},{cn:'地图',py:'dìtú',ko:'지도',ex:'你有地图吗？'},{cn:'景点',py:'jǐngdiǎn',ko:'명소',ex:'这里有很多景点。'}]},
+  ]},
+  4: {topics:[
+    {key:'emotion',icon:'❤️',title:'감정·심리',sub:'情感·心理',words:[{cn:'焦虑',py:'jiāo lǜ',ko:'불안하다',ex:'他感到很焦虑。'},{cn:'激动',py:'jī dòng',ko:'흥분하다',ex:'他激动地哭了。'},{cn:'委屈',py:'wěi qu',ko:'억울하다',ex:'她感到很委屈。'},{cn:'感激',py:'gǎn jī',ko:'감사하다',ex:'我非常感激你。'},{cn:'忧郁',py:'yōu yù',ko:'우울하다',ex:'她看起来很忧郁。'}]},
+    {key:'society',icon:'🏙️',title:'사회·문화',sub:'社会·文化',words:[{cn:'影响',py:'yǐng xiǎng',ko:'영향',ex:'这件事影响了很多人。'},{cn:'传统',py:'chuán tǒng',ko:'전통',ex:'我们保护传统文化。'},{cn:'发展',py:'fā zhǎn',ko:'발전하다',ex:'城市发展很快。'},{cn:'矛盾',py:'máo dùn',ko:'갈등',ex:'他们之间有矛盾。'},{cn:'责任',py:'zé rèn',ko:'책임',ex:'这是你的责任。'}]},
+    {key:'economy',icon:'💼',title:'경제',sub:'经济',words:[{cn:'经济',py:'jīng jì',ko:'경제',ex:'经济发展很快。'},{cn:'竞争',py:'jìng zhēng',ko:'경쟁',ex:'竞争越来越激烈。'},{cn:'投资',py:'tóu zī',ko:'투자하다',ex:'他投资了这家公司。'},{cn:'消费',py:'xiāo fèi',ko:'소비하다',ex:'消费习惯变了。'},{cn:'失业',py:'shī yè',ko:'실업',ex:'他失业了。'}]},
+  ]},
+  5: {topics:[
+    {key:'opinion',icon:'🗣️',title:'의견·논리',sub:'观点·逻辑',words:[{cn:'观点',py:'guān diǎn',ko:'관점',ex:'我的观点不同。'},{cn:'赞成',py:'zàn chéng',ko:'찬성하다',ex:'我赞成这个计划。'},{cn:'反对',py:'fǎn duì',ko:'반대하다',ex:'他反对这个决定。'},{cn:'坚持',py:'jiān chí',ko:'고집하다',ex:'他坚持学习。'},{cn:'讨论',py:'tǎo lùn',ko:'토론하다',ex:'我们讨论了这个问题。'}]},
+    {key:'nature',icon:'🌿',title:'자연·환경',sub:'自然·环境',words:[{cn:'污染',py:'wū rǎn',ko:'오염',ex:'空气污染很严重。'},{cn:'资源',py:'zī yuán',ko:'자원',ex:'节省资源很重要。'},{cn:'气候',py:'qì hòu',ko:'기후',ex:'气候变化很严重。'},{cn:'保护',py:'bǎo hù',ko:'보호하다',ex:'保护野生动物。'},{cn:'环境',py:'huán jìng',ko:'환경',ex:'保护环境很重要。'}]},
+    {key:'time',icon:'⏳',title:'시간·변화',sub:'时间·变化',words:[{cn:'逐渐',py:'zhú jiàn',ko:'점차',ex:'天气逐渐变冷。'},{cn:'忽然',py:'hū rán',ko:'갑자기',ex:'忽然下雨了。'},{cn:'终于',py:'zhōng yú',ko:'마침내',ex:'他终于来了。'},{cn:'曾经',py:'céng jīng',ko:'예전에',ex:'我曾经住在北京。'},{cn:'从此',py:'cóng cǐ',ko:'그때부터',ex:'从此他变了。'}]},
+  ]}
+};
+
+let cultLevel=3, cultTopic=null;
+
+function filterCult(lv,btn){
+  cultLevel=lv;
+  ['cf-hsk3','cf-hsk4','cf-hsk5'].forEach(function(id){document.getElementById(id).className='hsk-filter-btn';});
+  btn.className='hsk-filter-btn active-hsk'+lv;
+  cultTopic=null;
+  renderCultTopics();
+}
+
+function renderCultTopics(){
+  const topics=cultureData[cultLevel].topics;
+  let html='';
+  topics.forEach(function(t){
+    html += '<div class="topic-card '+(cultTopic===t.key?'selected':'')+'" onclick="selectCultTopic(\''+t.key+'\')">'
+      +'<div class="topic-icon">'+t.icon+'</div>'
+      +'<div class="topic-title">'+t.title+'</div>'
+      +'<div class="topic-sub">'+t.sub+'</div>'
+      +'<span class="topic-hsk h'+cultLevel+'">HSK '+cultLevel+'</span>'
+      +'</div>';
+  });
+  document.getElementById('cult-topic-grid').innerHTML=html;
+  if(!cultTopic){cultTopic=topics[0].key;renderCultWords();initCultQuiz();}
+}
+
+function selectCultTopic(key){cultTopic=key;renderCultTopics();renderCultWords();initCultQuiz();}
+
+function renderCultWords(){
+  const topics=cultureData[cultLevel].topics;
+  const topic=topics.find(function(t){return t.key===cultTopic;})||topics[0];
+  let html='';
+  topic.words.forEach(function(w){
+    html += '<div class="word-item"><div class="word-cn">'+w.cn+'</div><div class="word-pinyin">'+w.py+'</div>'
+      +'<div><div class="word-ko">'+w.ko+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:DM Mono,monospace">'+w.ex+'</div></div>'
+      +'<button class="btn-tts" style="font-size:10px;padding:4px 9px;flex-shrink:0" onclick="speakChinese(\''+w.cn+'\')">🔊</button>'
+      +'</div>';
+  });
+  document.getElementById('cult-words').innerHTML=html;
+}
+
+function initCultQuiz(){
+  const topics=cultureData[cultLevel].topics;
+  const topic=topics.find(function(t){return t.key===cultTopic;})||topics[0];
+  const all=[];
+  Object.values(cultureData).forEach(function(d){ d.topics.forEach(function(t){ t.words.forEach(function(w){ all.push(w); }); }); });
+  const qs=topic.words.slice(0,4).map(function(w){
+    const wrong=all.filter(function(x){return x.cn!==w.cn;}).sort(function(){return Math.random()-0.5;}).slice(0,3).map(function(x){return x.ko;});
+    const opts=[...wrong,w.ko].sort(function(){return Math.random()-0.5;});
+    return {type:'mc',q:'"'+w.cn+'"('+w.py+')의 뜻은?',opts:opts,ans:opts.indexOf(w.ko),exp:w.cn+'='+w.ko+'. 예: '+w.ex};
+  });
+  initQuiz('cult',qs,'cult-quiz-area');
+}
+
+/* ══ FLASHCARDS ══ */
+const allCards = {
+  3:[{cn:'学生',py:'xuésheng',meaning:'학생',ex:'我是学生。',lv:3},{cn:'图书馆',py:'túshūguǎn',meaning:'도서관',ex:'我在图书馆。',lv:3},{cn:'好吃',py:'hǎochī',meaning:'맛있다',ex:'这个很好吃。',lv:3},{cn:'超市',py:'chāoshì',meaning:'슈퍼마켓',ex:'我去超市。',lv:3},{cn:'认识',py:'rènshi',meaning:'알다',ex:'很高兴认识你。',lv:3},{cn:'天气',py:'tiānqì',meaning:'날씨',ex:'今天天气好。',lv:3},{cn:'快乐',py:'kuàilè',meaning:'즐겁다',ex:'他很快乐。',lv:3},{cn:'护照',py:'hùzhào',meaning:'여권',ex:'请出示护照。',lv:3}],
+  4:[{cn:'焦虑',py:'jiāo lǜ',meaning:'불안하다',ex:'他感到很焦虑。',lv:4},{cn:'影响',py:'yǐng xiǎng',meaning:'영향',ex:'这件事影响了很多人。',lv:4},{cn:'责任',py:'zé rèn',meaning:'책임',ex:'这是你的责任。',lv:4},{cn:'竞争',py:'jìng zhēng',meaning:'경쟁',ex:'竞争越来越激烈。',lv:4},{cn:'感激',py:'gǎn jī',meaning:'감사하다',ex:'我非常感激你。',lv:4},{cn:'发展',py:'fā zhǎn',meaning:'발전하다',ex:'城市发展很快。',lv:4},{cn:'矛盾',py:'máo dùn',meaning:'갈등',ex:'他们之间有矛盾。',lv:4},{cn:'投资',py:'tóu zī',meaning:'투자하다',ex:'他投资了这家公司。',lv:4}],
+  5:[{cn:'观点',py:'guān diǎn',meaning:'관점',ex:'我的观点不同。',lv:5},{cn:'逐渐',py:'zhú jiàn',meaning:'점차',ex:'天气逐渐变冷。',lv:5},{cn:'终于',py:'zhōng yú',meaning:'마침내',ex:'他终于来了。',lv:5},{cn:'坚持',py:'jiān chí',meaning:'고집하다',ex:'他坚持学习。',lv:5},{cn:'甚至',py:'shènzhì',meaning:'심지어',ex:'他甚至连饭都不吃。',lv:5},{cn:'居然',py:'jūrán',meaning:'뜻밖에도',ex:'他居然不知道。',lv:5},{cn:'极其',py:'jíqí',meaning:'극히',ex:'这件事极其重要。',lv:5},{cn:'根本',py:'gēnběn',meaning:'전혀/아예',ex:'他根本不来。',lv:5}],
+  tsc:[{cn:'介绍',py:'jièshào',meaning:'소개하다',ex:'我来自我介绍。',lv:'TSC'},{cn:'描述',py:'miáoshù',meaning:'묘사하다',ex:'请描述这张图片。',lv:'TSC'},{cn:'爱好',py:'àihào',meaning:'취미',ex:'我的爱好是看书。',lv:'TSC'},{cn:'职业',py:'zhíyè',meaning:'직업',ex:'我的职业是老师。',lv:'TSC'},{cn:'感受',py:'gǎnshòu',meaning:'느낌',ex:'我的感受是高兴。',lv:'TSC'},{cn:'全球化',py:'quánqiúhuà',meaning:'세계화',ex:'全球化影响了文化。',lv:'TSC'},{cn:'一方面',py:'yīfāngmiàn',meaning:'한편으로는',ex:'一方面很好，另一方面有问题。',lv:'TSC'},{cn:'观点',py:'guāndiǎn',meaning:'관점',ex:'我的观点是…',lv:'TSC'}]
+};
+
+let fcCards=[], fcIndex=0, fcFlipped=false, fcStats={hard:0,ok:0,easy:0};
+
+function selectFCLevel(lv,btn){
+  document.querySelectorAll('.fc-hsk-btn').forEach(function(b){b.className='fc-hsk-btn';});
+  const cls=lv===0?'active-hsk3':lv==='tsc'?'active-tsc':'active-hsk'+lv;
+  btn.className='fc-hsk-btn '+cls;
+  fcCards=lv===0?[...allCards[3],...allCards[4],...allCards[5],...allCards.tsc]:allCards[lv]||allCards[3];
+  fcIndex=0; resetFC(true);
+}
+
+function renderFC(){
+  if(!fcCards.length) return;
+  const c=fcCards[fcIndex];
+  document.getElementById('fc-cn').textContent=c.cn;
+  document.getElementById('fc-pinyin').textContent=c.py;
+  document.getElementById('fc-meaning').textContent=c.meaning;
+  document.getElementById('fc-example').innerHTML=c.ex;
+  const tag=document.getElementById('fc-lv-tag');
+  const lv=c.lv;
+  tag.textContent='HSK '+lv;
+  tag.style.background=lv===3?'var(--hsk3-dim)':lv===4?'var(--hsk4-dim)':lv===5?'var(--hsk5-dim)':'var(--tsc-dim)';
+  tag.style.color=lv===3?'var(--hsk3)':lv===4?'var(--hsk4)':lv===5?'var(--hsk5)':'var(--tsc)';
+  document.getElementById('fc-counter').textContent=(fcIndex+1)+' / '+fcCards.length;
+  document.getElementById('fc-prog').style.width=Math.round(((fcIndex+1)/fcCards.length)*100)+'%';
+  fcFlipped=false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('fc-rating').style.display='none';
+}
+
+function flipFC(){fcFlipped=!fcFlipped;document.getElementById('flashcard').classList.toggle('flipped',fcFlipped);document.getElementById('fc-rating').style.display=fcFlipped?'grid':'none';}
+function rateFC(type){const keys=['hard','ok','easy'];fcStats[keys[type]]++;document.getElementById('fc-'+keys[type]).textContent=fcStats[keys[type]];fcIndex=(fcIndex+1)%fcCards.length;renderFC();}
+function resetFC(keep){if(!keep){fcIndex=0;fcStats={hard:0,ok:0,easy:0};['hard','ok','easy'].forEach(function(k){document.getElementById('fc-'+k).textContent=0;});}renderFC();}
+
+/* ══ GRAMMAR ══ */
+function switchGrammarLevel(lv,btn){
+  document.querySelectorAll('.g-lv-tab').forEach(function(t){t.className='g-lv-tab';});
+  btn.className='g-lv-tab active-hsk'+lv;
+  document.querySelectorAll('.grammar-group').forEach(function(g){g.classList.remove('show');});
+  document.getElementById('gg-'+lv).classList.add('show');
+}
+
+function showGG(btn,id,grpId){
+  document.querySelectorAll('#'+grpId+' .g-tab').forEach(function(t){t.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('#'+grpId+' .grammar-card').forEach(function(c){c.classList.remove('show');});
+  document.getElementById(id).classList.add('show');
+}
+
+/* ══ PRONUNCIATION ══ */
+function analyzePinyin(){
+  const input=document.getElementById('pinyin-input').value.trim();
+  if(!input) return;
+  const res=document.getElementById('analysis-result');
+  const tips={'你好':'nǐ hǎo — 3성+3성 → 앞이 2성으로 변해요!','谢谢':'xiè xie — 4성+경성. 두번째는 가볍게!','不对':'bú duì — 不가 4성 앞에서 2성으로!','一个':'yí gè — 一가 4성 앞에서 2성으로!'};
+  const found=Object.entries(tips).find(function(pair){return input.includes(pair[0]);});
+  if(found){
+    res.innerHTML='<div style="font-size:13px;color:var(--text2);line-height:1.8"><span style="font-family:Noto Serif SC,serif;font-size:19px;color:var(--text)">'+found[0]+'</span><br>'+found[1]+'</div>';
+  } else {
+    res.innerHTML='<div style="font-size:13px;color:var(--text2);line-height:1.8"><strong style="color:var(--text)">"'+input+'"</strong> 분석:<br>· 각 음절을 분리해서 연습하세요<br>· 연속 3성은 앞을 2성으로 바꾸세요<br>· 천천히 → 자연 속도 순으로 연습하세요</div>';
+  }
+  res.className='analysis-result show';
+}
+
+/* ══ INIT ══ */
+window.addEventListener('load', function() {
+  if (window.speechSynthesis) {
+    _loadVoices();
+    setTimeout(_loadVoices, 200);
+    setTimeout(_loadVoices, 800);
+    setTimeout(_loadVoices, 2000);
+  }
+  if (navigator.permissions) {
+    navigator.permissions.query({name:'microphone'}).then(function(result) {
+      if (result.state === 'denied') {
+        showToast('⚠️ 마이크 권한이 차단되어 있어요. 브라우저 설정에서 허용해주세요.', 'warn');
+      }
+    }).catch(function(){});
+  }
+});
+
+renderDayGrid();
+renderCultTopics();
+cultTopic=cultureData[3].topics[0].key;
+renderCultWords();
+initCultQuiz();
+fcCards=allCards[3];
+renderFC();
+updateLessonHero();
+renderListenCard();
+renderListenList();
+selectTSCLevel(1);
+initVchatUI();
+</script>
+</body>
+</html>
