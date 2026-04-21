@@ -664,15 +664,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
   <!-- 음성 대화 -->
   <div class="voice-section" id="vs-vchat">
-    <!-- API 키 설정 -->
-    <div id="vchat-api-box" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;align-items:center">
-      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap">API KEY</span>
-      <input class="text-input" id="vchat-api-key" type="password" placeholder="Google AI Studio API 키 입력 (AIza...)" style="flex:1;font-family:'DM Mono',monospace;font-size:11px" />
-      <button class="btn-primary" style="font-size:11px;padding:6px 12px;white-space:nowrap" onclick="confirmApiKey()">저장</button>
-    </div>
-    <div id="vchat-api-saved" style="display:none;background:var(--green-dim);border:1px solid rgba(91,168,90,0.3);border-radius:var(--radius);padding:8px 14px;margin-bottom:12px;align-items:center;justify-content:space-between">
-      <span style="font-size:12px;color:var(--green)">🔑 API 키 설정됨</span>
-      <button class="btn-ghost" style="font-size:10px;padding:3px 9px" onclick="changeApiKey()">변경</button>
+    <div style="background:var(--green-dim);border:1px solid rgba(91,168,90,0.3);border-radius:var(--radius);padding:9px 14px;margin-bottom:12px;display:flex;gap:8px;align-items:center">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green);white-space:nowrap">AI CHAT</span>
+      <span id="vchat-ai-status" style="font-size:12px;color:var(--text2)">브라우저 내장 AI 또는 로컬 AI를 감지하는 중...</span>
     </div>
     <div class="chat-settings">
       <button class="setting-chip active" id="chip-cafe" onclick="toggleChip(this)">☕ 카페 모드</button>
@@ -1063,12 +1057,13 @@ function initRecognition(cb) {
   r.continuous = false;
   r.interimResults = true;
   r.maxAlternatives = 1;
+  r._cb = cb;
   r.onresult = e => {
     let final = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) final += e.results[i][0].transcript;
     }
-    if (final && cb) cb(final);
+    if (final && r._cb) r._cb(final);
   };
   r.onerror = e => {
     const msgs = {
@@ -1089,31 +1084,36 @@ function initRecognition(cb) {
 }
 
 /* ══ 마이크 권한 ══ */
-let _micPermissionGranted = false;
+// 스트림을 세션 내내 유지해 Chrome 의 재팝업 방지
+let _heldMicStream = null;
+let _micPermissionRequesting = null;
 async function requestMicPermission() {
-  // navigator.permissions 지원 시 조용히 상태 확인
-  if (navigator.permissions) {
+  if (_heldMicStream && _heldMicStream.active) return true;
+  if (_micPermissionRequesting) return _micPermissionRequesting;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
+  _micPermissionRequesting = (async function() {
     try {
-      const result = await navigator.permissions.query({ name: 'microphone' });
-      if (result.state === 'granted') { _micPermissionGranted = true; return true; }
-      if (result.state === 'denied') {
-        showToast('⚠️ 마이크 권한이 차단됐어요. 주소창 자물쇠 → 마이크 허용을 눌러주세요.', 'warn');
-        return false;
-      }
-    } catch(e) {}
-  }
-  if (_micPermissionGranted) return true;
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    stream.getTracks().forEach(t => t.stop());
-    _micPermissionGranted = true;
-    showToast('✅ 마이크 권한 허용됐어요!', 'ok');
-    return true;
-  } catch (e) {
-    showToast('⚠️ 마이크 권한을 허용해주세요. 브라우저 주소창 자물쇠 아이콘을 클릭하세요.', 'warn');
-    return false;
-  }
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      _heldMicStream = stream;
+      // 외부 요인으로 트랙이 종료되면 재획득하도록 플래그 해제
+      stream.getTracks().forEach(function(track){
+        track.onended = function(){ _heldMicStream = null; };
+      });
+      showToast('✅ 마이크 권한이 허용됐어요. 세션 동안 다시 묻지 않아요.', 'ok');
+      return true;
+    } catch(e) {
+      showToast('⚠️ 마이크 권한을 허용해주세요. 브라우저 주소창 자물쇠 아이콘을 확인하세요.', 'warn');
+      return false;
+    } finally {
+      _micPermissionRequesting = null;
+    }
+  })();
+  return _micPermissionRequesting;
 }
+// 페이지 떠날 때 스트림 정리
+window.addEventListener('beforeunload', function(){
+  if (_heldMicStream) _heldMicStream.getTracks().forEach(function(t){ t.stop(); });
+});
 
 /* ══ NAVIGATION ══ */
 function showPanel(id, el) {
@@ -1596,68 +1596,23 @@ function renderToneDrill() {
 
 /* ══ VOICE CHAT ══ */
 let vchatHistory = [];
-let _decryptedApiKey = null;
+let vchatAiBackend = 'fallback';
+let vchatLocalTopic = 'general';
+let vchatLastReplies = [];
+let vchatShownCorrections = [];
+let vchatState = {};
 
-// AES-GCM 암호화 (Web Crypto API)
-const _SALT = new Uint8Array([67,104,105,110,101,115,101,83,116,117,100,121]);
-const _PASS = 'chinese-study-key-v1';
-async function _getCryptoKey() {
-  const enc = new TextEncoder();
-  const mat = await crypto.subtle.importKey('raw', enc.encode(_PASS), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    {name:'PBKDF2', salt:_SALT, iterations:100000, hash:'SHA-256'},
-    mat, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']
-  );
-}
-async function _encryptKey(plain) {
-  const key = await _getCryptoKey();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const enc = new TextEncoder();
-  const cipher = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(plain));
-  const buf = new Uint8Array(12 + cipher.byteLength);
-  buf.set(iv); buf.set(new Uint8Array(cipher), 12);
-  return btoa(String.fromCharCode(...buf));
-}
-async function _decryptKey(stored) {
-  try {
-    const key = await _getCryptoKey();
-    const buf = Uint8Array.from(atob(stored), c => c.charCodeAt(0));
-    const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv:buf.slice(0,12)}, key, buf.slice(12));
-    return new TextDecoder().decode(plain);
-  } catch(e) { return null; }
-}
-
-async function confirmApiKey() {
-  const val = document.getElementById('vchat-api-key').value.trim();
-  if(!val) return;
-  const encrypted = await _encryptKey(val);
-  localStorage.setItem('geminiApiKeyEnc', encrypted);
-  _decryptedApiKey = val;
-  document.getElementById('vchat-api-key').value = '';
-  showApiSavedState();
-}
-function changeApiKey() {
-  _decryptedApiKey = null;
+function initVchatUI() {
   localStorage.removeItem('geminiApiKeyEnc');
-  document.getElementById('vchat-api-saved').style.display = 'none';
-  document.getElementById('vchat-api-box').style.display = 'flex';
-}
-function showApiSavedState() {
-  document.getElementById('vchat-api-box').style.display = 'none';
-  const saved = document.getElementById('vchat-api-saved');
-  saved.style.display = 'flex';
-}
-async function initVchatUI() {
-  const enc = localStorage.getItem('geminiApiKeyEnc');
-  if(enc) {
-    _decryptedApiKey = await _decryptKey(enc);
-    if(_decryptedApiKey) { showApiSavedState(); }
-    else { localStorage.removeItem('geminiApiKeyEnc'); }
-  }
+  detectVchatAiBackend();
   resetVchat();
 }
 function resetVchat() {
   vchatHistory = [];
+  vchatLocalTopic = 'general';
+  vchatLastReplies = [];
+  vchatShownCorrections = [];
+  vchatState = {lastAsk:null, name:'', drink:'', temp:'', sugar:'', studyGoal:'', mood:''};
   const win = document.getElementById('vchat-window');
   if(!win) return;
   win.innerHTML = '<div class="msg"><div class="avatar av-ai">AI</div><div>'
@@ -1667,24 +1622,25 @@ function resetVchat() {
     +'</div></div></div>';
 }
 
-function getVchatSystemPrompt() {
-  const isCafe = document.getElementById('chip-cafe')?.classList.contains('active');
-  const isBiz  = document.getElementById('chip-biz')?.classList.contains('active');
-  const doCorrect = document.getElementById('chip-correct')?.classList.contains('active');
-  const doKorean  = document.getElementById('chip-korean')?.classList.contains('active');
-  let scene = isBiz ? '비즈니스·회사 상황' : isCafe ? '카페·일상 대화 상황' : '일반 대화';
-  return `You are a friendly Chinese language tutor having a real conversation with a Korean learner studying for HSK 3→5 and TSC.
-
-CONTEXT: ${scene}
-USER LEVEL: Intermediate (HSK 3–4). Use mostly HSK 3-4 vocabulary. Occasionally introduce one HSK 5 word but always explain it naturally.
-
-RULES:
-1. Always reply PRIMARILY in Chinese (Mandarin, simplified). Keep sentences short and clear (1–3 sentences).
-2. Ask a follow-up question to keep the conversation going naturally.
-3. ${doCorrect ? 'If the user makes a grammar or vocabulary mistake, gently correct it with: 【纠正】 correct version — then continue the conversation.' : 'Do not correct mistakes; just respond naturally.'}
-4. ${doKorean ? 'After your Chinese reply, add one line: 💡 (Korean translation/hint in parentheses, max 1 sentence).' : 'Do not add Korean translations unless the user specifically asks.'}
-5. NEVER switch to English. If the user writes Korean, respond in Chinese and gently encourage them to try in Chinese.
-6. Format: just natural conversational text. No markdown headers. No lengthy explanations.`;
+async function detectVchatAiBackend() {
+  const status = document.getElementById('vchat-ai-status');
+  try {
+    if (window.LanguageModel || window.ai?.languageModel || window.ai?.createTextSession) {
+      vchatAiBackend = 'browser';
+      if (status) status.textContent = '브라우저 내장 AI로 대화합니다. API 키가 필요 없어요.';
+      return;
+    }
+    const ctrl = new AbortController();
+    setTimeout(function(){ ctrl.abort(); }, 700);
+    const res = await fetch('http://localhost:11434/api/tags', {signal: ctrl.signal});
+    if (res.ok) {
+      vchatAiBackend = 'ollama';
+      if (status) status.textContent = '로컬 Ollama AI로 대화합니다. API 키가 필요 없어요.';
+      return;
+    }
+  } catch(e) {}
+  vchatAiBackend = 'fallback';
+  if (status) status.textContent = 'AI 백엔드가 없어서 내장 튜터 모드로 대화합니다. Ollama 또는 브라우저 AI를 켜면 더 자연스러워져요.';
 }
 
 function toggleChip(el){ el.classList.toggle('active'); }
@@ -1695,13 +1651,310 @@ async function toggleVchatMic() {
   if(vchatMicOn){ vchatMicOn=false; btn.classList.remove('recording'); status.textContent='마이크 버튼을 눌러 말하기'; if(vchatRec){try{vchatRec.stop();}catch(e){}} return; }
   const ok = await requestMicPermission();
   if(!ok) return;
-  vchatRec = initRecognition(function(text) {
+  const onResult = function(text) {
     if(text) sendVchat(true, text);
     vchatMicOn=false; btn.classList.remove('recording'); status.textContent='마이크 버튼을 눌러 말하기';
-  });
-  if(!vchatRec) return;
-  vchatRec.start();
+  };
+  // 인스턴스를 재사용해 재팝업 방지
+  if (!vchatRec) {
+    vchatRec = initRecognition(onResult);
+    if(!vchatRec) return;
+  } else {
+    vchatRec._cb = onResult;
+  }
+  try { vchatRec.start(); } catch(e) {
+    // 이미 started 상태이면 stop 후 재시작
+    try { vchatRec.stop(); } catch(e2) {}
+    setTimeout(function(){ try{ vchatRec.start(); }catch(e){} }, 100);
+  }
   vchatMicOn=true; btn.classList.add('recording'); status.textContent='🔴 녹음 중... 말해보세요';
+}
+
+function getVchatSettings() {
+  return {
+    cafe: document.getElementById('chip-cafe')?.classList.contains('active'),
+    biz: document.getElementById('chip-biz')?.classList.contains('active'),
+    correct: document.getElementById('chip-correct')?.classList.contains('active'),
+    korean: document.getElementById('chip-korean')?.classList.contains('active')
+  };
+}
+
+function makeLocalCorrection(text) {
+  let correction = '';
+  if (/[가-힣]/.test(text)) correction = '【纠正】我想练习中文。';
+  else if (/我\s*是\s*(叫|名字)/.test(text)) correction = '【纠正】我叫…… / 我的名字是……';
+  else if (/我\s*学习\s*中文/.test(text)) correction = '【纠正】我在学习中文。';
+  if (!correction || vchatShownCorrections.includes(correction)) return '';
+  vchatShownCorrections.push(correction);
+  if (vchatShownCorrections.length > 8) vchatShownCorrections.shift();
+  return correction;
+}
+
+function pickFreshReply(candidates) {
+  const available = candidates.filter(function(t){ return !vchatLastReplies.includes(t); });
+  const pool = available.length ? available : candidates;
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  vchatLastReplies.push(chosen);
+  if (vchatLastReplies.length > 6) vchatLastReplies.shift();
+  return chosen;
+}
+
+function rememberVchatFacts(raw) {
+  const name = raw.match(/(?:我叫|我的名字是|我是)\s*([\u3400-\u9fffA-Za-z가-힣]{1,12})/);
+  if (name) vchatState.name = name[1];
+  if (/咖啡|美式|拿铁|茶|饮料/.test(raw)) vchatState.drink = raw.match(/拿铁|美式|咖啡|茶|饮料/)?.[0] || vchatState.drink;
+  if (/热|뜨거| 따뜻|温|hot/i.test(raw)) vchatState.temp = '热的';
+  if (/冰|차가|아이스|冷|ice|iced/i.test(raw)) vchatState.temp = '冰的';
+  if (/不要糖|无糖|不加糖|설탕.*빼|노슈가|少糖/.test(raw)) vchatState.sugar = '不要糖';
+  if (/加糖|糖|달게|sweet/i.test(raw) && !/不要糖|无糖|不加糖/.test(raw)) vchatState.sugar = '加一点糖';
+  if (/HSK|TSC|考试|口语|听力|성조|발음/i.test(raw)) vchatState.studyGoal = raw.match(/HSK|TSC|口语|听力|考试/)?.[0] || '中文';
+  if (/开心|高兴|累|忙|紧张|좋|힘들|피곤|바빠|괜찮/.test(raw)) vchatState.mood = raw;
+}
+
+function isAnsweringLastAsk(raw) {
+  if (!vchatState.lastAsk) return false;
+  if (vchatState.lastAsk === 'temp' && /热|冰|冷|뜨거|차가|아이스|따뜻|hot|ice/i.test(raw)) return true;
+  if (vchatState.lastAsk === 'sugar' && /糖|달|sweet|不要|不用|빼|少/.test(raw)) return true;
+  if (vchatState.lastAsk === 'takeout' && /这里|带走|매장|포장|take|here/i.test(raw)) return true;
+  if (vchatState.lastAsk === 'study-difficulty' && /听力|口语|发音|语法|词|말하기|듣기|발음|문법/.test(raw)) return true;
+  return false;
+}
+
+function makeContextualFollowup(raw) {
+  if (vchatState.lastAsk === 'temp' && vchatState.temp) {
+    vchatState.lastAsk = 'sugar';
+    return '好的，' + (vchatState.temp === '热的' ? '一杯热咖啡。' : '一杯冰咖啡。') + ' 你要加糖吗？';
+  }
+  if (vchatState.lastAsk === 'sugar' && vchatState.sugar) {
+    vchatState.lastAsk = 'takeout';
+    return '明白了，' + (vchatState.sugar === '不要糖' ? '不加糖。' : '加一点糖。') + ' 你想在这里喝，还是带走？';
+  }
+  if (vchatState.lastAsk === 'takeout') {
+    vchatState.lastAsk = null;
+    return '好的，已经帮你点好了。请稍等一下。你还想顺便练习付款的说法吗？';
+  }
+  if (vchatState.lastAsk === 'study-difficulty') {
+    vchatState.lastAsk = null;
+    return '我懂了。那我们可以每次只练一个小目标。请先用中文说一句今天发生的事，我帮你改得更自然。';
+  }
+  return '';
+}
+
+function makeKoreanHintFromChinese(text) {
+  let cn = text
+    .replace(/【纠正】[^\n]*/g, '')
+    .replace(/💡[^\n]*/g, '')
+    .replace(/<br>/g, '\n')
+    .trim();
+  if (!cn) return '';
+  const exact = {
+    '你好！欢迎来咖啡店。你想喝咖啡还是茶？':'안녕하세요! 카페에 오신 걸 환영해요. 커피를 마시고 싶나요, 아니면 차를 마시고 싶나요?',
+    '你好，今天店里有拿铁和美式。你想点什么？':'안녕하세요, 오늘 가게에는 라떼와 아메리카노가 있어요. 무엇을 주문하고 싶나요?',
+    '欢迎光临！你先坐一会儿吧。你喜欢甜一点的饮料吗？':'어서 오세요! 먼저 잠깐 앉으세요. 조금 단 음료를 좋아하나요?',
+    '好的，我给你一杯咖啡。你要热的还是冰的？':'좋아요, 커피 한 잔 드릴게요. 뜨거운 걸 원하나요, 아니면 차가운 걸 원하나요?',
+    '好的，一杯热咖啡。 你要加糖吗？':'좋아요, 뜨거운 커피 한 잔이요. 설탕을 넣을까요?',
+    '好的，一杯冰咖啡。 你要加糖吗？':'좋아요, 아이스 커피 한 잔이요. 설탕을 넣을까요?',
+    '明白了，不加糖。 你想在这里喝，还是带走？':'알겠습니다, 설탕은 넣지 않을게요. 여기서 마실 건가요, 아니면 가져갈 건가요?',
+    '明白了，加一点糖。 你想在这里喝，还是带走？':'알겠습니다, 설탕을 조금 넣을게요. 여기서 마실 건가요, 아니면 가져갈 건가요?',
+    '好的，已经帮你点好了。请稍等一下。你还想顺便练习付款的说法吗？':'좋아요, 주문을 넣어드렸어요. 잠시만 기다려 주세요. 결제 표현도 같이 연습해볼까요?',
+    '加油！每天说一点中文很有帮助。你觉得听力难，还是口语难？':'힘내요! 매일 중국어를 조금씩 말하는 것이 큰 도움이 돼요. 듣기가 어렵나요, 아니면 말하기가 어렵나요?',
+    '我懂了。那我们可以每次只练一个小目标。请先用中文说一句今天发生的事，我帮你改得更自然。':'이해했어요. 그럼 한 번에 작은 목표 하나만 연습해봐요. 먼저 오늘 있었던 일을 중국어 한 문장으로 말해보세요. 제가 더 자연스럽게 고쳐드릴게요.'
+  };
+  if (exact[cn]) return exact[cn];
+  let ko = cn;
+  const parts = [
+    [/好的/g,'좋아요'],[/明白了/g,'알겠습니다'],[/没问题/g,'문제없어요'],[/你好/g,'안녕하세요'],[/欢迎光临/g,'어서 오세요'],
+    [/我给你/g,'제가 당신에게'],[/一杯/g,'한 잔'],[/咖啡/g,'커피'],[/拿铁/g,'라떼'],[/美式/g,'아메리카노'],[/茶/g,'차'],
+    [/热的/g,'뜨거운 것'],[/冰的/g,'차가운 것'],[/加糖/g,'설탕을 넣다'],[/不加糖/g,'설탕을 넣지 않다'],[/不要糖/g,'설탕은 필요 없어요'],
+    [/你想/g,'당신은 ~하고 싶나요'],[/你要/g,'당신은 원하나요'],[/还是/g,'아니면'],[/在这里/g,'여기에서'],[/带走/g,'가져가다'],
+    [/请稍等一下/g,'잠시만 기다려 주세요'],[/练习/g,'연습하다'],[/中文/g,'중국어'],[/口语/g,'말하기'],[/听力/g,'듣기'],
+    [/今天/g,'오늘'],[/明天/g,'내일'],[/为什么/g,'왜'],[/什么/g,'무엇'],[/吗/g,'?'],[/？/g,'?'],[/。/g,'.'],[/，/g,', ']
+  ];
+  parts.forEach(function(pair){ ko = ko.replace(pair[0], pair[1]); });
+  return ko !== cn ? ko : '중국어 답변: ' + cn;
+}
+
+function makeLocalVchatReply(text) {
+  const s = getVchatSettings();
+  const raw = text.trim();
+  const lower = raw.toLowerCase();
+  const hasKorean = /[가-힣]/.test(raw);
+  const hasChinese = /[\u3400-\u9fff]/.test(raw);
+  let correction = '';
+  let reply = '';
+  rememberVchatFacts(raw);
+
+  if (isAnsweringLastAsk(raw)) {
+    reply = makeContextualFollowup(raw);
+  }
+  correction = (s.correct && !reply) ? makeLocalCorrection(raw) : '';
+
+  if (!reply) {
+  if (hasKorean && !hasChinese) {
+    reply = pickFreshReply([
+      '我明白你的意思。请试着用中文说一遍，好吗？你可以说：我想练习中文。',
+      '你可以先说一个简单句：我想聊这个话题。然后我会帮你接下去。',
+      '没关系，我们慢慢来。请用中文说一个关键词，比如：咖啡、学习、工作。'
+    ]);
+  } else if (/你好|您好|早上好|晚上好|hi|hello/i.test(raw)) {
+    vchatLocalTopic = s.cafe ? 'cafe' : 'general';
+    vchatState.lastAsk = s.cafe ? 'drink' : 'topic';
+    reply = pickFreshReply(s.cafe ? [
+      '你好！欢迎来咖啡店。你想喝咖啡还是茶？',
+      '你好，今天店里有拿铁和美式。你想点什么？',
+      '欢迎光临！你先坐一会儿吧。你喜欢甜一点的饮料吗？'
+    ] : [
+      '你好！今天你想练习什么话题？',
+      '你好，很高兴见到你。我们可以聊学习、工作或者旅行。',
+      '你好！请用一句中文告诉我，你今天心情怎么样？'
+    ]);
+  } else if (/我叫|我的名字|我是/.test(raw)) {
+    vchatState.lastAsk = 'intro';
+    reply = pickFreshReply([
+      (vchatState.name ? vchatState.name + '，' : '') + '很高兴认识你！你的中文说得不错。你学习中文多久了？',
+      '认识你很高兴。你可以再介绍一下你的爱好吗？',
+      '好的，我记住了。那我也介绍一下：我是你的中文练习伙伴。你今天想聊什么？'
+    ]);
+  } else if (/咖啡|茶|喝|饮料|美式|拿铁/.test(raw)) {
+    vchatLocalTopic = 'cafe';
+    vchatState.lastAsk = vchatState.temp ? 'sugar' : 'temp';
+    reply = pickFreshReply([
+      '好的，我给你一杯' + (vchatState.drink || '咖啡') + '。你要热的还是冰的？',
+      '没问题。' + (vchatState.drink ? '一杯' + vchatState.drink + '。' : '') + '你想加牛奶或者糖吗？',
+      '明白了。你可以更自然地说：我要一杯' + (vchatState.temp || '热的') + (vchatState.drink || '咖啡') + '。还需要点心吗？',
+      '好的，一杯' + (vchatState.drink || '咖啡') + '。你想在这里喝，还是带走？'
+    ]);
+  } else if (/吃|饭|菜|面|饺子|餐厅|好吃/.test(raw)) {
+    vchatLocalTopic = 'food';
+    vchatState.lastAsk = 'food';
+    reply = pickFreshReply([
+      '听起来很好吃！你最喜欢的中国菜是什么？',
+      '我也喜欢聊美食。你喜欢辣的菜吗？',
+      '如果在餐厅点菜，你可以说：请给我菜单。你想练习点菜吗？'
+    ]);
+  } else if (/学习|中文|汉语|HSK|TSC|考试/.test(raw) || lower.includes('hsk') || lower.includes('tsc')) {
+    vchatLocalTopic = 'study';
+    vchatState.lastAsk = 'study-difficulty';
+    reply = pickFreshReply([
+      '加油！每天说一点中文很有帮助。你觉得听力难，还是口语难？',
+      '学习中文需要多听多说。' + (vchatState.studyGoal ? '既然你在练' + vchatState.studyGoal + '，' : '') + '我们先练一个短回答，好吗？',
+      '我们可以用三句话练习：时间、地点、原因。你先说一个句子吧。'
+    ]);
+  } else if (/工作|公司|会议|老板|同事|客户|业务/.test(raw) || s.biz) {
+    vchatLocalTopic = 'business';
+    vchatState.lastAsk = 'business';
+    reply = pickFreshReply([
+      '在公司里，这样说很自然：我想确认一下时间。你今天有什么工作安排？',
+      '这个表达很实用。你想练习会议、邮件，还是客户沟通？',
+      '如果和同事说话，可以更礼貌一点：麻烦你帮我确认一下。你想试试吗？'
+    ]);
+  } else if (/今天|明天|昨天|周末|星期|时间/.test(raw)) {
+    vchatState.lastAsk = 'daily';
+    reply = pickFreshReply([
+      '今天很适合练习中文。你今天做了什么？',
+      '听起来和时间有关。请用“今天我……”说一个完整句子。',
+      '那明天呢？你明天有什么计划？'
+    ]);
+  } else if (/吗|什么|哪里|谁|为什么|怎么|\?/.test(raw)) {
+    vchatState.lastAsk = 'question';
+    reply = pickFreshReply([
+      '这是一个好问题。我们可以慢慢说。你能再给我一个例子吗？',
+      '我来帮你练回答。你先说你的想法，我再帮你改得更自然。',
+      '这个问题可以这样开始回答：我觉得…… 你觉得呢？'
+    ]);
+  } else {
+    const topicPrompts = {
+      cafe: ['你刚才点了饮料。现在你想要付款，还是继续点甜点？', '如果咖啡太苦，你可以说：可以加一点糖吗？你试着说说看。'],
+      food: ['我们继续聊吃的吧。你平时在家做饭吗？', '请用中文介绍一道你喜欢的菜。'],
+      study: ['我们继续练口语。请用“因为……所以……”造句。', '你可以说说今天学到的一个新词。'],
+      business: ['我们继续练商务中文。请用中文安排一个会议时间。', '如果客户迟到了，你会怎么说？'],
+      general: ['我听懂了。请再说一点，可以用一个完整的句子。', '不错！我们继续聊。你为什么这么想？', '很好。请试着加上时间、地点或者原因。']
+    };
+    reply = pickFreshReply(topicPrompts[vchatLocalTopic] || topicPrompts.general);
+  }
+  }
+
+  if (correction) reply = correction + '\n' + reply;
+  if (s.korean) reply += '\n💡 ' + makeKoreanHintFromChinese(reply);
+  return reply;
+}
+
+function getVchatAiPrompt(userText) {
+  const s = getVchatSettings();
+  const scene = s.biz ? 'business Chinese roleplay' : s.cafe ? 'cafe/daily conversation roleplay' : 'general Chinese conversation practice';
+  const recent = vchatHistory.slice(-8).map(function(m){
+    return (m.role === 'user' ? 'Learner: ' : 'Tutor: ') + m.content.replace(/\n/g,' ');
+  }).join('\n');
+  return [
+    'You are a warm Mandarin Chinese conversation tutor for a Korean learner.',
+    'Act like a real chat partner, not a worksheet.',
+    'Context: ' + scene + '.',
+    'Reply mainly in simplified Chinese, 1-4 short sentences.',
+    'Ask one natural follow-up question.',
+    s.correct ? 'If the learner makes a clear mistake, include one short correction starting with 【纠正】.' : 'Do not correct unless the learner asks.',
+    s.korean ? 'After your Chinese reply, add one line starting with 💡 that translates your Chinese reply into Korean. Do not give a generic study hint.' : 'Do not use Korean unless needed for a tiny hint.',
+    'Never repeat your previous reply. Use the conversation history.',
+    '',
+    recent ? 'Conversation so far:\n' + recent : '',
+    'Learner just said: ' + userText,
+    'Tutor reply:'
+  ].join('\n');
+}
+
+async function askBrowserAi(prompt) {
+  if (window.LanguageModel?.create) {
+    const session = await window.LanguageModel.create({
+      systemPrompt: 'You are a concise Mandarin Chinese tutor for Korean learners.'
+    });
+    return await session.prompt(prompt);
+  }
+  if (window.ai?.languageModel?.create) {
+    const session = await window.ai.languageModel.create({
+      systemPrompt: 'You are a concise Mandarin Chinese tutor for Korean learners.'
+    });
+    return await session.prompt(prompt);
+  }
+  if (window.ai?.createTextSession) {
+    const session = await window.ai.createTextSession();
+    return await session.prompt(prompt);
+  }
+  return '';
+}
+
+async function askOllama(prompt) {
+  const body = JSON.stringify({
+    model: 'llama3.2',
+    prompt: prompt,
+    stream: false,
+    options: {temperature: 0.8, num_predict: 180}
+  });
+  const res = await fetch('http://localhost:11434/api/generate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: body
+  });
+  if (!res.ok) return '';
+  const data = await res.json();
+  return data.response || '';
+}
+
+async function generateVchatReply(text) {
+  const prompt = getVchatAiPrompt(text);
+  try {
+    if (vchatAiBackend === 'browser') {
+      const browserReply = (await askBrowserAi(prompt)).trim();
+      if (browserReply) return browserReply;
+    }
+    if (vchatAiBackend === 'ollama') {
+      const ollamaReply = (await askOllama(prompt)).trim();
+      if (ollamaReply) return ollamaReply;
+    }
+  } catch(e) {
+    vchatAiBackend = 'fallback';
+    const status = document.getElementById('vchat-ai-status');
+    if (status) status.textContent = 'AI 호출에 실패해서 내장 튜터 모드로 전환했습니다.';
+  }
+  return makeLocalVchatReply(text);
 }
 
 async function sendVchat(fromMic, voiceText) {
@@ -1715,53 +1968,22 @@ async function sendVchat(fromMic, voiceText) {
   win.scrollTop = win.scrollHeight;
   vchatHistory.push({role:'user', content: text});
 
-  const apiKey = _decryptedApiKey;
-  if(!apiKey) {
-    appendAiMsg('API 키를 위에 입력해주세요. Google AI Studio(aistudio.google.com)에서 무료로 발급받을 수 있어요.', '');
-    return;
-  }
-
-  // 타이핑 인디케이터
-  const typingId = 'vchat-typing-'+Date.now();
-  win.innerHTML += '<div class="msg" id="'+typingId+'"><div class="avatar av-ai">AI</div><div><div class="bubble bubble-ai" style="color:var(--text3)">...</div></div></div>';
+  const typingId = 'vchat-typing-' + Date.now();
+  win.innerHTML += '<div class="msg" id="'+typingId+'"><div class="avatar av-ai">AI</div><div><div class="bubble bubble-ai" style="color:var(--text3)">생각 중...</div></div></div>';
   win.scrollTop = win.scrollHeight;
 
-  // Gemini API 형식으로 대화 기록 변환 (user/model 교대 필수)
-  const geminiContents = vchatHistory.map(function(m) {
-    return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{text: m.content}] };
-  });
-
-  try {
-    const res = await fetch(
-      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key='+apiKey,
-      {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          systemInstruction: { parts: [{text: getVchatSystemPrompt()}] },
-          contents: geminiContents,
-          generationConfig: { maxOutputTokens: 300, temperature: 0.9 }
-        })
-      }
-    );
-    const data = await res.json();
-    document.getElementById(typingId)?.remove();
-    if(data.error) { appendAiMsg('오류: '+data.error.message, ''); return; }
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    vchatHistory.push({role:'assistant', content: reply});
-    const cnOnly = reply.replace(/💡[^\n]*/g,'').trim();
-    appendAiMsg(reply, cnOnly);
-  } catch(e) {
-    document.getElementById(typingId)?.remove();
-    appendAiMsg('네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요.', '');
-  }
+  const reply = await generateVchatReply(text);
+  document.getElementById(typingId)?.remove();
+  vchatHistory.push({role:'assistant', content: reply});
+  const cnOnly = reply.replace(/💡[^\n]*/g,'').trim();
+  appendAiMsg(reply, cnOnly);
 }
 
 function appendAiMsg(text, ttsText) {
   const win = document.getElementById('vchat-window');
   const safeText = escHtml(text).replace(/\n/g,'<br>').replace(/【纠正】/g,'<span class="correction-tag">【纠正】</span>');
   const speakTarget = (ttsText||text).replace(/💡[^\n]*/g,'').trim();
-  const escaped = speakTarget.replace(/'/g,"\\'");
+  const escaped = speakTarget.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
   win.innerHTML += '<div class="msg"><div class="avatar av-ai">AI</div><div>'
     +'<div class="bubble bubble-ai">'+safeText
     +'<div class="tts-row"><button class="btn-tts" style="font-size:10px;padding:3px 8px" onclick="speakChinese(\''+escaped+'\',0.9)">🔊 듣기</button></div>'
